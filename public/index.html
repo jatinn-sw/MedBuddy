@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedBuddy - AI Medical Assistant</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="main">
+    <div class="navbar">
+      <div class="lower-out">
+        <div class="lower-nav">
+          <div class="site-name">
+            <h1>MedBuddy</h1>
+          </div>
+          <div class="nav-links">
+            <ul>
+              <li>Diagnostic Tools</li>
+              <li>Symptoms</li>
+              <li>Conditions</li>
+              <li>Health And Wellness</li>
+            </ul>
+          </div>
+          <div class="nav-button">
+            <button id="online-consultation"><b>Online<br>Consultation</b></button>
+            <button id="medical-facilities"><b>Medical Facilities<br>Near Me</b></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pg1">
+      <div class="pg1-inner">
+        <div class="pg1-content">
+          <span class="tilted">Hello</span>
+          <h1>WE KNOW <br />HOW TO TALK... <br />ABOUT YOUR HEALTH</h1>
+          <p>
+            "<b>MedBuddy</b>" provides accurate, reliable, and easy-to-understand health information, helping you
+            navigate your symptoms and make informed decisions about your well-being."
+          </p>
+          <button id="lets-talk-btn">Let's Talk</button>
+        </div>
+        <div class="img-outer">
+          <div class="img-box">
+            <img src="https://images.pexels.com/photos/8376277/pexels-photo-8376277.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&dpr=1" alt="Medical AI Assistant" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Chatbot Container -->
+    <div id="chat-container" style="display:none;">
+      <div id="chat-header">
+        <h3>Chat with MedBuddy</h3>
+        <button id="close-chat">×</button>
+      </div>
+      <div id="chat-box"></div>
+      <div id="chat-input-container">
+        <input type="text" id="user-input" placeholder="Describe your symptoms..." maxlength="500">
+        <button id="send-button" disabled>
+          <span id="send-text">Send</span>
+          <span id="loading-spinner" style="display: none;">●●●</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Services Section -->
+    <div class="pg2">
+      <div class="pg2-inner">
+        <div class="pg2-content">
+          <span class="tilted">Services</span>
+          <h1>Services We Offer</h1>
+          <div class="card-container">
+            <div class="pg2-cards">
+              <div class="inner-card">
+                <h1>01</h1>
+                <h2>AI-Powered Symptom Analysis</h2>
+                <div class="pg2_card_img">
+                  <img src="https://images.pexels.com/photos/8376277/pexels-photo-8376277.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1" alt="AI Analysis">
+                </div>
+                <p>
+                  Our advanced AI analyzes your symptoms and asks targeted questions to provide accurate health assessments.
+                  Get personalized recommendations based on your specific situation.
+                </p>
+              </div>
+            </div>
+            <div class="pg2-cards">
+              <div class="inner-card">
+                <h1>02</h1>
+                <h2>Expert Medical Content</h2>
+                <div class="pg2_card_img">
+                  <img src="https://images.pexels.com/photos/4173251/pexels-photo-4173251.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1" alt="Medical Content">
+                </div>
+                <p>
+                  Access scientifically vetted content written by medical professionals. Get reliable health information you can trust.
+                </p>
+              </div>
+            </div>
+            <div class="pg2-cards">
+              <div class="inner-card">
+                <h1>03</h1>
+                <h2>Personalized Action Plans</h2>
+                <div class="pg2_card_img">
+                  <img src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1" alt="Action Plans">
+                </div>
+                <p>
+                  Receive step-by-step health plans tailored to your needs, including wellness routines and specialist referrals.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
