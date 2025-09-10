@@ -687,6 +687,10 @@ body {
   margin: 1rem;
   font-size: 0.875rem;
   transition: var(--transition-fast);
+  width: 90%;
+  max-width: 90%;
+  min-width: 270px;
+  box-sizing: border-box;
 }
 
 #user-input:focus {
