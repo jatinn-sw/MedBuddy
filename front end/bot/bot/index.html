@@ -59,10 +59,28 @@
       <div id="chat-header">
         <button id="close-chat">X</button>
         <h3>Chat with MedBuddy</h3>
+        <button id="toggle-sidebar" title="Show/Hide chat history" aria-pressed="false">☰</button>
       </div>
-      <div id="chat-box"></div>
-      <input type="text" id="user-input" placeholder="Type your message here">
-      <button id="send-button">Send</button>
+      <div id="chat-body">
+        <aside id="chat-sidebar">
+          <div class="sidebar-actions">
+            <button id="new-chat">+ New Chat</button>
+            <button id="delete-chat" class="danger">Delete Chat</button>
+          </div>
+          <ul id="conversation-list"></ul>
+        </aside>
+        <section id="chat-main">
+          <div id="chat-box"></div>
+          <div id="chat-input-row" style="display:flex; align-items:center; gap:8px; padding: 0.75rem 1rem;">
+            <input type="text" id="user-input" placeholder="Type your message here">
+            <button id="mic-button" aria-label="Start voice input" title="Voice input">
+              <span id="mic-icon">🎤</span>
+            </button>
+            <button id="send-button">Send</button>
+          </div>
+          <div id="voice-status" style="display:none; padding: 0 1rem 1rem 1rem; color:#6b7280; font-size:12px;">Listening… tap to stop</div>
+        </section>
+      </div>
     </div>
 
     <div class="pg2">
@@ -154,6 +172,9 @@
   </div>
   </div>
 
+  <!-- Mini Chat FAB -->
+  <button id="chat-fab" aria-label="Open chat" title="Chat with MedBuddy" style="display:none;"><img src="chatbot.webp" alt="Chatbot" /></button>
+
   <div class="pg4">
     <div class="pg4-inner">
       <div class="pg4-content">
@@ -162,7 +183,7 @@
         <h1>Top Articles</h1>
         <div class="pg4card-container">
           <!-- Card 1: Cause of Rashes -->
-          <div class="pg4-cards" onclick="this.classList.toggle('flipped')">
+          <div class="pg4-cards">
             <div class="pg4-card-front">
               <div class="pg4inner-card">
                 <img src="rashes.png" alt="" />
@@ -184,7 +205,7 @@
           </div>
 
           <!-- Card 2: Common Cold -->
-          <div class="pg4-cards" onclick="this.classList.toggle('flipped')">
+          <div class="pg4-cards">
             <div class="pg4-card-front">
               <div class="pg4inner-card">
                 <img src="cold.png" alt="" />
@@ -206,7 +227,7 @@
           </div>
 
           <!-- Card 3: Headache Relief -->
-          <div class="pg4-cards" onclick="this.classList.toggle('flipped')">
+          <div class="pg4-cards">
             <div class="pg4-card-front">
               <div class="pg4inner-card">
                 <img src="headache.avif" alt="" />
@@ -227,7 +248,7 @@
           </div>
 
           <!-- Card 4: Painful Urination -->
-          <div class="pg4-cards" onclick="this.classList.toggle('flipped')">
+          <div class="pg4-cards">
             <div class="pg4-card-front">
               <div class="pg4inner-card">
                 <img src="pain urin.avif" alt="" />
@@ -248,7 +269,7 @@
           </div>
 
           <!-- Card 5: STD Symptoms -->
-          <div class="pg4-cards" onclick="this.classList.toggle('flipped')">
+          <div class="pg4-cards">
             <div class="pg4-card-front">
               <div class="pg4inner-card">
                 <img src="stdimg.avif" alt="" />
@@ -269,7 +290,7 @@
           </div>
 
           <!-- Card 6: Lower Left Abdomen Pain -->
-          <div class="pg4-cards" onclick="this.classList.toggle('flipped')">
+          <div class="pg4-cards">
             <div class="pg4-card-front">
               <div class="pg4inner-card">
                 <img src="leftabd.png" alt="" />
@@ -371,6 +392,195 @@
     const letsTalkButton = document.getElementById('lets-talk-btn');
     const chatContainer = document.getElementById('chat-container');
     const closeButton = document.getElementById('close-chat');
+    const micButton = document.getElementById('mic-button');
+    const micIcon = document.getElementById('mic-icon');
+    const voiceStatus = document.getElementById('voice-status');
+    const chatFab = document.getElementById('chat-fab');
+    const chatBody = document.getElementById('chat-body');
+    const chatSidebar = document.getElementById('chat-sidebar');
+    const conversationList = document.getElementById('conversation-list');
+    const newChatBtn = document.getElementById('new-chat');
+    const deleteChatBtn = document.getElementById('delete-chat');
+    const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+
+    // System instruction for better follow-ups
+    const SYSTEM_PROMPT = "You are MedBuddy, a helpful, concise medical assistant. Keep track of conversation context and answer follow-up questions based on prior messages unless the user changes topic. Always be clear and empathetic. You are not a substitute for professional care.";
+
+    // Basic markdown formatter for bot messages
+    function formatMarkdown(text) {
+      if (!text) return '';
+      let html = text;
+      // Escape basic HTML to avoid injection, then allow our replacements
+      html = html
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      // Bold then italics
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+      // Support underscores as well
+      html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+      html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+      // Numbered lists: add line breaks before numbers like 1. 
+      html = html.replace(/(\n|^)(\d+\.)\s/g, '<br>$2 ');
+      // New lines to breaks
+      html = html.replace(/\n/g, '<br>');
+      // Tidy multiple breaks
+      html = html.replace(/(<br>\s*){2,}/g, '<br>');
+      return html;
+    }
+
+    // Conversation history for follow-up questions (persisted)
+    let conversationHistory = [];
+    let sessionId = null;
+
+    function loadHistory() {
+      try {
+        const meta = JSON.parse(localStorage.getItem('medbuddy.sessions.meta') || '{}');
+        sessionId = meta.active || null;
+        // Restore sidebar preference
+        const hidden = localStorage.getItem('medbuddy.sidebarHidden') === '1';
+        if (hidden && chatBody) chatBody.classList.add('sidebar-hidden');
+        if (toggleSidebarBtn) toggleSidebarBtn.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+        if (sessionId) {
+          const saved = localStorage.getItem(`medbuddy.session.${sessionId}`);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) conversationHistory = parsed;
+          }
+        }
+        renderConversationList();
+      } catch (e) { console.warn('History load failed', e); }
+    }
+
+    function saveHistory() {
+      try {
+        // Keep system message + last 20 messages
+        const system = conversationHistory.find(m => m.role === 'system');
+        const rest = conversationHistory.filter(m => m.role !== 'system');
+        const trimmed = [system || { role: 'system', content: SYSTEM_PROMPT }, ...rest.slice(-20)];
+        if (!sessionId) sessionId = createNewSessionId();
+        localStorage.setItem(`medbuddy.session.${sessionId}`, JSON.stringify(trimmed));
+        const meta = JSON.parse(localStorage.getItem('medbuddy.sessions.meta') || '{}');
+        const sessions = meta.sessions || [];
+        if (!sessions.find(s => s.id === sessionId)) {
+          sessions.unshift({ id: sessionId, title: generateTitleFrom(trimmed) });
+        } else {
+          const s = sessions.find(s => s.id === sessionId);
+          s.title = generateTitleFrom(trimmed);
+        }
+        localStorage.setItem('medbuddy.sessions.meta', JSON.stringify({ active: sessionId, sessions: sessions.slice(0, 25) }));
+        renderConversationList();
+      } catch (e) { console.warn('History save failed', e); }
+    }
+
+    function createNewSessionId() {
+      return `s_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function generateTitleFrom(messages) {
+      const firstUser = messages.find(m => m.role === 'user');
+      if (!firstUser) return 'New conversation';
+      const text = firstUser.content.trim();
+      return (text.length > 28 ? text.slice(0, 28) + '…' : text) || 'New conversation';
+    }
+
+    function renderConversationList() {
+      if (!conversationList) return;
+      const meta = JSON.parse(localStorage.getItem('medbuddy.sessions.meta') || '{}');
+      const sessions = meta.sessions || [];
+      conversationList.innerHTML = '';
+      sessions.forEach(s => {
+        const li = document.createElement('li');
+        li.className = `conv-item${s.id === meta.active ? ' active' : ''}`;
+        li.textContent = s.title || 'Conversation';
+        li.title = s.title || 'Conversation';
+        li.dataset.id = s.id;
+        conversationList.appendChild(li);
+      });
+    }
+
+    function switchSession(id) {
+      try {
+        const saved = localStorage.getItem(`medbuddy.session.${id}`);
+        if (saved) {
+          sessionId = id;
+          conversationHistory = JSON.parse(saved);
+          const meta = JSON.parse(localStorage.getItem('medbuddy.sessions.meta') || '{}');
+          localStorage.setItem('medbuddy.sessions.meta', JSON.stringify({ active: id, sessions: meta.sessions || [] }));
+          // Refresh list highlight
+          renderConversationList();
+          // Set aria-selected on active item
+          const activeEl = conversationList && conversationList.querySelector(`.conv-item[data-id="${id}"]`);
+          if (activeEl) {
+            conversationList.querySelectorAll('.conv-item').forEach(el => el.setAttribute('aria-selected', 'false'));
+            activeEl.setAttribute('aria-selected', 'true');
+          }
+          // Re-render chat UI
+          chatBox.innerHTML = '';
+          conversationHistory.forEach(msg => {
+            if (msg.role === 'user') {
+              const el = document.createElement('div');
+              el.classList.add('user-message');
+              el.textContent = msg.content;
+              chatBox.appendChild(el);
+            } else if (msg.role === 'assistant') {
+              const el = document.createElement('div');
+              el.classList.add('bot-message');
+              el.innerHTML = msg.content.replace(/(\d+\.) /g, '<br>$1 ').replace(/^<br>/, '');
+              chatBox.appendChild(el);
+            }
+          });
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+      } catch(e) { console.warn('Switch session failed', e); }
+    }
+
+    // Delegate clicks to support dynamic items reliably
+    if (conversationList) {
+      conversationList.addEventListener('click', (e) => {
+        const item = e.target.closest('.conv-item');
+        if (!item) return;
+        switchSession(item.dataset.id);
+      });
+    }
+
+    newChatBtn.addEventListener('click', () => {
+      sessionId = createNewSessionId();
+      conversationHistory = [{ role: 'system', content: SYSTEM_PROMPT }];
+      chatBox.innerHTML = '';
+      saveHistory();
+      userInput.focus();
+    });
+
+    // Delete current chat session
+    deleteChatBtn.addEventListener('click', () => {
+      try {
+        const meta = JSON.parse(localStorage.getItem('medbuddy.sessions.meta') || '{}');
+        const sessions = meta.sessions || [];
+        if (!sessionId) return;
+        // Remove current session storage
+        localStorage.removeItem(`medbuddy.session.${sessionId}`);
+        // Remove from sessions list
+        const remaining = sessions.filter(s => s.id !== sessionId);
+        // Pick next active (first remaining) or create a new one
+        if (remaining.length > 0) {
+          const nextId = remaining[0].id;
+          localStorage.setItem('medbuddy.sessions.meta', JSON.stringify({ active: nextId, sessions: remaining }));
+          switchSession(nextId);
+        } else {
+          // No sessions left; start fresh
+          localStorage.setItem('medbuddy.sessions.meta', JSON.stringify({ active: null, sessions: [] }));
+          sessionId = createNewSessionId();
+          conversationHistory = [{ role: 'system', content: SYSTEM_PROMPT }];
+          chatBox.innerHTML = '';
+          saveHistory();
+        }
+        renderConversationList();
+      } catch (e) {
+        console.warn('Delete chat failed', e);
+      }
+    });
 
     // When the user clicks "Let's Talk", show the chat container
     letsTalkButton.addEventListener('click', () => {
@@ -379,6 +589,23 @@
       chatContainer.style.right = '10px';     // Position it on the right
       chatContainer.style.bottom = '10px';    // Position it at the bottom
       chatContainer.style.zIndex = '1000';    // Ensure it's on top
+
+      // Rehydrate UI from history (last few)
+      if (chatBox.children.length === 0 && conversationHistory.length > 0) {
+        conversationHistory.forEach(msg => {
+          if (msg.role === 'user') {
+            const el = document.createElement('div');
+            el.classList.add('user-message');
+            el.textContent = msg.content;
+            chatBox.appendChild(el);
+          } else if (msg.role === 'assistant') {
+            const el = document.createElement('div');
+            el.classList.add('bot-message');
+            el.innerHTML = formatMarkdown(msg.content);
+            chatBox.appendChild(el);
+          }
+        });
+      }
     });
 
     // Close the chatbot window
@@ -386,8 +613,31 @@
       chatContainer.style.display = 'none';  // Hide chat container
     });
 
+    // FAB opens chat
+    chatFab.addEventListener('click', () => {
+      chatContainer.style.display = 'block';
+      chatContainer.style.position = 'fixed';
+      chatContainer.style.right = '10px';
+      chatContainer.style.bottom = '10px';
+      chatContainer.style.zIndex = '1000';
+    });
+
+    // Toggle sidebar visibility
+    if (toggleSidebarBtn) {
+      toggleSidebarBtn.addEventListener('click', () => {
+        if (!chatBody) return;
+        const hidden = chatBody.classList.toggle('sidebar-hidden');
+        toggleSidebarBtn.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+        localStorage.setItem('medbuddy.sidebarHidden', hidden ? '1' : '0');
+      });
+    }
+
     // Conversation history for follow-up questions
-      let conversationHistory = [];
+      // ensure system prompt exists
+      if (!conversationHistory.find(m => m.role === 'system')) {
+        conversationHistory.unshift({ role: 'system', content: SYSTEM_PROMPT });
+        saveHistory();
+      }
 
       sendButton.addEventListener('click', async () => {
         const message = userInput.value.trim();
@@ -402,6 +652,7 @@
 
         // Add user message to conversation history
         conversationHistory.push({ role: 'user', content: message });
+        saveHistory();
 
         try {
           // Add typing indicator
@@ -430,13 +681,12 @@
           chatBox.removeChild(typingIndicator);
           const botMessage = document.createElement('div');
           botMessage.classList.add('bot-message');
-          let formattedContent = data.message.content.replace(/(\d+\.) /g, '<br>$1 ');
-          if (formattedContent.startsWith('<br>')) formattedContent = formattedContent.slice(4);
-          botMessage.innerHTML = formattedContent;
+          botMessage.innerHTML = formatMarkdown(data.message.content);
           chatBox.appendChild(botMessage);
 
           // Add bot message to conversation history
           conversationHistory.push({ role: 'assistant', content: data.message.content });
+          saveHistory();
         } catch (error) {
           console.error('Error:', error);
           const errorMessage = document.createElement('div');
@@ -462,6 +712,103 @@
       // Open Practo (or other online consultation platform)
       window.open('https://www.practo.com/consult', '_blank'); // Redirect to Practo for consultation
     });
+
+    // Voice recognition (Web Speech API)
+    let recognition = null;
+    let isListening = false;
+
+    function supportsSpeechRecognition() {
+      return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+    }
+
+    function initRecognition() {
+      if (!supportsSpeechRecognition()) return null;
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const r = new SR();
+      r.lang = navigator.language || 'en-US';
+      r.interimResults = true;
+      r.continuous = false;
+      return r;
+    }
+
+    function setListeningState(listening) {
+      isListening = listening;
+      micButton.classList.toggle('listening', listening);
+      voiceStatus.style.display = listening ? 'block' : 'none';
+      micIcon.textContent = listening ? '⏺️' : '🎤';
+    }
+
+    function startListening() {
+      if (!supportsSpeechRecognition()) {
+        alert('Voice input not supported in this browser. Please use Chrome or Edge.');
+        return;
+      }
+      if (!recognition) recognition = initRecognition();
+      if (!recognition) return;
+
+      let finalTranscript = '';
+      setListeningState(true);
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interim += transcript;
+          }
+        }
+        userInput.value = (finalTranscript + interim).trim();
+      };
+
+      recognition.onerror = (e) => {
+        console.error('Speech recognition error:', e);
+        setListeningState(false);
+      };
+
+      recognition.onend = () => {
+        setListeningState(false);
+        // Auto-send removed: keep text in input for manual review and sending
+      };
+    }
+
+    function stopListening() {
+      try { recognition && recognition.stop(); } catch(e) {}
+      setListeningState(false);
+    }
+
+    if (micButton) {
+      micButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (isListening) stopListening(); else startListening();
+      });
+      voiceStatus.addEventListener('click', stopListening);
+
+      if (!supportsSpeechRecognition()) {
+        micButton.disabled = true;
+        micButton.title = 'Voice input not supported in this browser';
+      }
+    }
+
+    // Floating FAB visibility based on hero section
+    const heroSection = document.querySelector('.pg1');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio > 0.2) {
+          // In hero: hide FAB
+          chatFab.classList.remove('visible');
+          chatFab.style.display = 'none';
+        } else {
+          // Scrolled past hero: show FAB
+          chatFab.style.display = 'block';
+          requestAnimationFrame(() => chatFab.classList.add('visible'));
+        }
+      });
+    }, { threshold: [0, 0.2, 1] });
+
+    if (heroSection) observer.observe(heroSection);
 
   </script>
 
