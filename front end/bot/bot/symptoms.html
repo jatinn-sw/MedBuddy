@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Symptoms - MedBuddy</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="stylesheet" href="hackathontask.css" />
+  <style>
+    .symptoms-container {
+      max-width: 1400px;
+      min-height: 100vh;
+    }
+    
+    .hero-section {
+      background: var(--gradient-hero);
+      border-radius: 24px;
+      padding: 4rem 3rem;
+      margin-bottom: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 40%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      transform: rotate(15deg);
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 1.5rem;
+      line-height: 1.1;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    
+    .search-section {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 3rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      margin-bottom: 3rem;
+      border: 1px solid rgba(236, 72, 153, 0.1);
+    }
+    
+    .search-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 1rem;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 1.5rem;
+      border: 2px solid var(--gray-200);
+      border-radius: 12px;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+      background: var(--gray-50);
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+    }
+    
+    .symptoms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+    
+    .symptom-category {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      border: 1px solid rgba(236, 72, 153, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .symptom-category::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-primary);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .symptom-category:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(236, 72, 153, 0.15);
+    }
+    
+    .symptom-category:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .category-icon {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+    
+    .symptom-category h3 {
+      color: var(--gray-800);
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+    }
+    
+    .symptom-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .symptom-item {
+      padding: 1rem;
+      margin: 0.75rem 0;
+      background: var(--gray-50);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+      font-weight: 500;
+    }
+    
+    .symptom-item:hover {
+      background: var(--accent-teal);
+      border-left-color: var(--primary-blue);
+      transform: translateX(8px);
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.15);
+    }
+    
+    .symptom-detail-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      border: 1px solid rgba(236, 72, 153, 0.1);
+    }
+    
+    .severity-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    
+    .severity-mild { background: #dcfce7; color: #16a34a; }
+    .severity-moderate { background: #fef3c7; color: #d97706; }
+    .severity-severe { background: #fed7aa; color: #ea580c; }
+    .severity-critical { background: #fee2e2; color: #dc2626; }
+    .severity-high { background: #fee2e2; color: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="lower-out">
+      <div class="lower-nav">
+        <div class="site-name">
+          <h1><a href="index.html" style="text-decoration: none; color: inherit;">MedBuddy</a></h1>
+        </div>
+        <div class="nav-links">
+          <ul>
+            <li><a href="diagnostic-tools.html">Diagnostic Tools</a></li>
+            <li><a href="symptoms.html" style="color: var(--primary-blue); font-weight: 600;">Symptoms</a></li>
+            <li><a href="conditions.html">Conditions</a></li>
+            <li><a href="wellness.html">Health And Wellness</a></li>
+          </ul>
+        </div>
+        <div class="nav-button">
+          <button><b>Online<br>Consultation</b></button>
+          <button><b>Medical Facilities<br>Near Me</b></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="symptoms-container">
+    <div class="hero-section">
+      <div class="hero-content">
+        <span class="tilted" style="color: rgba(255,255,255,0.9); font-size: 1rem; letter-spacing: 2px;">Symptoms</span>
+        <h1 class="hero-title">Comprehensive<br>Symptom Database</h1>
+        <p class="hero-subtitle">Explore our extensive database of symptoms, their causes, and when to seek medical attention.</p>
+      </div>
+    </div>
+
+    <div class="search-section">
+      <h3 class="search-title">🔍 Search Symptoms</h3>
+      <input type="text" class="search-input" id="symptomSearch" placeholder="Type a symptom to search (e.g., headache, chest pain, fever)..." onkeyup="searchSymptoms()">
+      <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <div class="symptoms-grid">
+      <div class="symptom-category">
+        <span class="category-icon">🫀</span>
+        <h3>Cardiovascular Symptoms</h3>
+        <ul class="symptom-list">
+          <li class="symptom-item" onclick="showSymptomDetail('chest-pain')">Chest Pain</li>
+          <li class="symptom-item" onclick="showSymptomDetail('shortness-breath')">Shortness of Breath</li>
+          <li class="symptom-item" onclick="showSymptomDetail('heart-palpitations')">Heart Palpitations</li>
+          <li class="symptom-item" onclick="showSymptomDetail('dizziness')">Dizziness</li>
+          <li class="symptom-item" onclick="showSymptomDetail('fatigue')">Fatigue</li>
+          <li class="symptom-item" onclick="showSymptomDetail('swelling-legs')">Swelling in Legs</li>
+        </ul>
+      </div>
+
+      <div class="symptom-category">
+        <span class="category-icon">🫁</span>
+        <h3>Respiratory Symptoms</h3>
+        <ul class="symptom-list">
+          <li class="symptom-item" onclick="showSymptomDetail('cough')">Cough</li>
+          <li class="symptom-item" onclick="showSymptomDetail('wheezing')">Wheezing</li>
+          <li class="symptom-item" onclick="showSymptomDetail('chest-tightness')">Chest Tightness</li>
+          <li class="symptom-item" onclick="showSymptomDetail('runny-nose')">Runny Nose</li>
+          <li class="symptom-item" onclick="showSymptomDetail('sore-throat')">Sore Throat</li>
+          <li class="symptom-item" onclick="showSymptomDetail('nasal-congestion')">Nasal Congestion</li>
+        </ul>
+      </div>
+
+      <div class="symptom-category">
+        <span class="category-icon">🫃</span>
+        <h3>Digestive Symptoms</h3>
+        <ul class="symptom-list">
+          <li class="symptom-item" onclick="showSymptomDetail('abdominal-pain')">Abdominal Pain</li>
+          <li class="symptom-item" onclick="showSymptomDetail('nausea')">Nausea</li>
+          <li class="symptom-item" onclick="showSymptomDetail('vomiting')">Vomiting</li>
+          <li class="symptom-item" onclick="showSymptomDetail('diarrhea')">Diarrhea</li>
+          <li class="symptom-item" onclick="showSymptomDetail('constipation')">Constipation</li>
+          <li class="symptom-item" onclick="showSymptomDetail('bloating')">Bloating</li>
+        </ul>
+      </div>
+
+      <div class="symptom-category">
+        <span class="category-icon">🧠</span>
+        <h3>Neurological Symptoms</h3>
+        <ul class="symptom-list">
+          <li class="symptom-item" onclick="showSymptomDetail('headache')">Headache</li>
+          <li class="symptom-item" onclick="showSymptomDetail('migraine')">Migraine</li>
+          <li class="symptom-item" onclick="showSymptomDetail('memory-problems')">Memory Problems</li>
+          <li class="symptom-item" onclick="showSymptomDetail('confusion')">Confusion</li>
+          <li class="symptom-item" onclick="showSymptomDetail('seizures')">Seizures</li>
+          <li class="symptom-item" onclick="showSymptomDetail('numbness')">Numbness</li>
+        </ul>
+      </div>
+
+      <div class="symptom-category">
+        <span class="category-icon">🦴</span>
+        <h3>Musculoskeletal Symptoms</h3>
+        <ul class="symptom-list">
+          <li class="symptom-item" onclick="showSymptomDetail('joint-pain')">Joint Pain</li>
+          <li class="symptom-item" onclick="showSymptomDetail('back-pain')">Back Pain</li>
+          <li class="symptom-item" onclick="showSymptomDetail('muscle-weakness')">Muscle Weakness</li>
+          <li class="symptom-item" onclick="showSymptomDetail('stiffness')">Stiffness</li>
+          <li class="symptom-item" onclick="showSymptomDetail('swelling-joints')">Swelling in Joints</li>
+          <li class="symptom-item" onclick="showSymptomDetail('limited-mobility')">Limited Mobility</li>
+        </ul>
+      </div>
+
+      <div class="symptom-category">
+        <span class="category-icon">🌡️</span>
+        <h3>General Symptoms</h3>
+        <ul class="symptom-list">
+          <li class="symptom-item" onclick="showSymptomDetail('fever')">Fever</li>
+          <li class="symptom-item" onclick="showSymptomDetail('chills')">Chills</li>
+          <li class="symptom-item" onclick="showSymptomDetail('night-sweats')">Night Sweats</li>
+          <li class="symptom-item" onclick="showSymptomDetail('weight-loss')">Unexplained Weight Loss</li>
+          <li class="symptom-item" onclick="showSymptomDetail('weight-gain')">Unexplained Weight Gain</li>
+          <li class="symptom-item" onclick="showSymptomDetail('sleep-problems')">Sleep Problems</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Symptom Detail Modal -->
+  <div id="symptomDetailModal" class="symptom-detail-modal">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 id="symptomTitle" style="color: var(--primary-blue); margin: 0;"></h2>
+        <button onclick="closeSymptomModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+      </div>
+      
+      <div id="symptomContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const symptomDatabase = {
+      'chest-pain': {
+        title: 'Chest Pain',
+        severity: 'high',
+        description: 'Pain or discomfort in the chest area',
+        causes: ['Heart attack', 'Angina', 'Muscle strain', 'Acid reflux', 'Anxiety'],
+        whenToSeekHelp: 'Seek immediate medical attention if chest pain is severe, radiates to arm/jaw, or is accompanied by shortness of breath',
+        homeRemedies: ['Rest', 'Deep breathing', 'Over-the-counter pain relief (if appropriate)'],
+        prevention: ['Regular exercise', 'Healthy diet', 'Stress management', 'Avoid smoking']
+      },
+      'headache': {
+        title: 'Headache',
+        severity: 'moderate',
+        description: 'Pain or discomfort in the head or neck area',
+        causes: ['Tension', 'Migraine', 'Dehydration', 'Stress', 'Sinus issues'],
+        whenToSeekHelp: 'Seek medical attention if headaches are severe, frequent, or accompanied by vision changes',
+        homeRemedies: ['Rest in dark room', 'Cold compress', 'Hydration', 'Gentle massage'],
+        prevention: ['Regular sleep schedule', 'Stress management', 'Stay hydrated', 'Regular exercise']
+      },
+      'fever': {
+        title: 'Fever',
+        severity: 'moderate',
+        description: 'Elevated body temperature above normal (98.6°F/37°C)',
+        causes: ['Viral infection', 'Bacterial infection', 'Inflammation', 'Heat exhaustion'],
+        whenToSeekHelp: 'Seek medical attention if fever is above 103°F, lasts more than 3 days, or is accompanied by severe symptoms',
+        homeRemedies: ['Rest', 'Hydration', 'Cool compresses', 'Over-the-counter fever reducers'],
+        prevention: ['Good hygiene', 'Vaccinations', 'Avoid sick contacts', 'Proper nutrition']
+      },
+      'abdominal-pain': {
+        title: 'Abdominal Pain',
+        severity: 'moderate',
+        description: 'Pain or discomfort in the stomach or abdominal area',
+        causes: ['Indigestion', 'Food poisoning', 'Appendicitis', 'Gallstones', 'Irritable bowel syndrome'],
+        whenToSeekHelp: 'Seek immediate medical attention if pain is severe, sudden, or accompanied by vomiting/fever',
+        homeRemedies: ['Rest', 'Clear liquids', 'Heat pad', 'Avoid solid foods initially'],
+        prevention: ['Eat slowly', 'Avoid trigger foods', 'Regular meals', 'Stay hydrated']
+      },
+      'shortness-breath': {
+        title: 'Shortness of Breath',
+        severity: 'high',
+        description: 'Difficulty breathing or feeling like you cannot get enough air.',
+        causes: ['Asthma', 'COPD', 'Heart failure', 'Anxiety', 'Pneumonia', 'Pulmonary embolism'],
+        whenToSeekHelp: 'Seek immediate medical attention if shortness of breath is sudden, severe, or accompanied by chest pain.',
+        homeRemedies: ['Sit upright', 'Pursed lip breathing', 'Stay calm', 'Use inhaler if prescribed'],
+        prevention: ['Avoid triggers', 'Regular exercise', 'Quit smoking', 'Manage stress']
+      },
+      'heart-palpitations': {
+        title: 'Heart Palpitations',
+        severity: 'moderate',
+        description: 'Feeling of irregular, rapid, or pounding heartbeat.',
+        causes: ['Stress', 'Anxiety', 'Caffeine', 'Medications', 'Heart conditions', 'Electrolyte imbalance'],
+        whenToSeekHelp: 'Seek medical attention if palpitations are frequent, prolonged, or accompanied by chest pain.',
+        homeRemedies: ['Deep breathing', 'Valsalva maneuver', 'Cold water on face', 'Rest'],
+        prevention: ['Limit caffeine', 'Manage stress', 'Regular exercise', 'Adequate sleep']
+      },
+      'dizziness': {
+        title: 'Dizziness',
+        severity: 'moderate',
+        description: 'Feeling lightheaded, unsteady, or like you might faint.',
+        causes: ['Low blood pressure', 'Dehydration', 'Inner ear problems', 'Medications', 'Anxiety'],
+        whenToSeekHelp: 'Seek medical attention if dizziness is severe, persistent, or accompanied by chest pain.',
+        homeRemedies: ['Sit or lie down', 'Stay hydrated', 'Eat regular meals', 'Avoid sudden movements'],
+        prevention: ['Stay hydrated', 'Eat regular meals', 'Avoid alcohol', 'Manage stress']
+      },
+      'fatigue': {
+        title: 'Fatigue',
+        severity: 'mild',
+        description: 'Extreme tiredness or lack of energy that interferes with daily activities.',
+        causes: ['Sleep deprivation', 'Stress', 'Anemia', 'Depression', 'Thyroid problems', 'Chronic fatigue'],
+        whenToSeekHelp: 'Seek medical attention if fatigue is persistent, severe, or accompanied by other symptoms.',
+        homeRemedies: ['Adequate sleep', 'Regular exercise', 'Balanced diet', 'Stress management'],
+        prevention: ['Regular sleep schedule', 'Balanced diet', 'Regular exercise', 'Manage stress']
+      },
+      'swelling-legs': {
+        title: 'Swelling in Legs',
+        severity: 'moderate',
+        description: 'Accumulation of fluid in the legs, ankles, or feet causing puffiness.',
+        causes: ['Heart failure', 'Kidney disease', 'Liver disease', 'Venous insufficiency', 'Pregnancy'],
+        whenToSeekHelp: 'Seek medical attention if swelling is sudden, severe, or accompanied by shortness of breath.',
+        homeRemedies: ['Elevate legs', 'Compression stockings', 'Reduce salt intake', 'Regular movement'],
+        prevention: ['Regular exercise', 'Maintain healthy weight', 'Limit salt intake', 'Avoid prolonged sitting']
+      },
+      'cough': {
+        title: 'Cough',
+        severity: 'mild',
+        description: 'Reflex action to clear airways of mucus, irritants, or foreign particles.',
+        causes: ['Common cold', 'Flu', 'Allergies', 'Asthma', 'Bronchitis', 'Pneumonia', 'Smoking'],
+        whenToSeekHelp: 'Seek medical attention if cough persists more than 3 weeks or produces blood.',
+        homeRemedies: ['Stay hydrated', 'Honey and lemon', 'Steam inhalation', 'Throat lozenges'],
+        prevention: ['Avoid smoking', 'Wash hands frequently', 'Avoid irritants', 'Stay hydrated']
+      },
+      'wheezing': {
+        title: 'Wheezing',
+        severity: 'moderate',
+        description: 'High-pitched whistling sound when breathing, especially during exhalation.',
+        causes: ['Asthma', 'COPD', 'Allergic reactions', 'Bronchitis', 'Heart failure', 'Anxiety'],
+        whenToSeekHelp: 'Seek immediate medical attention if wheezing is severe or persistent.',
+        homeRemedies: ['Use inhaler if prescribed', 'Sit upright', 'Stay calm', 'Avoid triggers'],
+        prevention: ['Avoid triggers', 'Use medications as prescribed', 'Regular checkups', 'Manage stress']
+      },
+      'chest-tightness': {
+        title: 'Chest Tightness',
+        severity: 'moderate',
+        description: 'Feeling of pressure, squeezing, or constriction in the chest area.',
+        causes: ['Anxiety', 'Asthma', 'Heart conditions', 'Muscle tension', 'Acid reflux', 'Panic attacks'],
+        whenToSeekHelp: 'Seek medical attention if chest tightness is severe or persistent.',
+        homeRemedies: ['Deep breathing', 'Relaxation techniques', 'Sit upright', 'Stay calm'],
+        prevention: ['Stress management', 'Regular exercise', 'Avoid triggers', 'Proper posture']
+      },
+      'runny-nose': {
+        title: 'Runny Nose',
+        severity: 'mild',
+        description: 'Excessive nasal discharge, often clear and watery.',
+        causes: ['Common cold', 'Allergies', 'Flu', 'Sinusitis', 'Weather changes', 'Irritants'],
+        whenToSeekHelp: 'Seek medical attention if runny nose persists more than 10 days.',
+        homeRemedies: ['Nasal saline spray', 'Steam inhalation', 'Stay hydrated', 'Rest'],
+        prevention: ['Wash hands frequently', 'Avoid allergens', 'Stay hydrated', 'Use humidifier']
+      },
+      'sore-throat': {
+        title: 'Sore Throat',
+        severity: 'mild',
+        description: 'Pain, scratchiness, or irritation of the throat that often worsens when swallowing.',
+        causes: ['Viral infections', 'Bacterial infections', 'Allergies', 'Dry air', 'Irritants', 'Acid reflux'],
+        whenToSeekHelp: 'Seek medical attention if sore throat is severe or persists more than a week.',
+        homeRemedies: ['Warm salt water gargle', 'Throat lozenges', 'Stay hydrated', 'Rest'],
+        prevention: ['Avoid irritants', 'Stay hydrated', 'Wash hands frequently', 'Avoid sharing utensils']
+      },
+      'nasal-congestion': {
+        title: 'Nasal Congestion',
+        severity: 'mild',
+        description: 'Blocked or stuffy nose due to inflamed blood vessels in nasal passages.',
+        causes: ['Common cold', 'Allergies', 'Sinusitis', 'Weather changes', 'Irritants', 'Deviated septum'],
+        whenToSeekHelp: 'Seek medical attention if congestion persists more than 10 days.',
+        homeRemedies: ['Nasal saline spray', 'Steam inhalation', 'Elevate head while sleeping', 'Stay hydrated'],
+        prevention: ['Avoid allergens', 'Use humidifier', 'Stay hydrated', 'Wash hands frequently']
+      },
+      'nausea': {
+        title: 'Nausea',
+        severity: 'moderate',
+        description: 'Feeling of sickness with an inclination to vomit.',
+        causes: ['Food poisoning', 'Motion sickness', 'Pregnancy', 'Medications', 'Anxiety', 'Migraine'],
+        whenToSeekHelp: 'Seek medical attention if nausea is severe or persistent.',
+        homeRemedies: ['Ginger tea', 'Small frequent meals', 'Stay hydrated', 'Rest'],
+        prevention: ['Eat regular meals', 'Avoid triggers', 'Manage stress', 'Stay hydrated']
+      },
+      'vomiting': {
+        title: 'Vomiting',
+        severity: 'moderate',
+        description: 'Forceful expulsion of stomach contents through the mouth.',
+        causes: ['Food poisoning', 'Viral infections', 'Motion sickness', 'Pregnancy', 'Medications', 'Migraine'],
+        whenToSeekHelp: 'Seek medical attention if vomiting is severe or persistent.',
+        homeRemedies: ['Stay hydrated with small sips', 'Rest', 'Avoid solid foods initially', 'Ginger tea'],
+        prevention: ['Food safety', 'Avoid triggers', 'Stay hydrated', 'Manage stress']
+      },
+      'diarrhea': {
+        title: 'Diarrhea',
+        severity: 'moderate',
+        description: 'Frequent, loose, or watery bowel movements.',
+        causes: ['Viral infections', 'Food poisoning', 'Medications', 'IBS', 'Food intolerances', 'Stress'],
+        whenToSeekHelp: 'Seek medical attention if diarrhea is severe or persistent.',
+        homeRemedies: ['Stay hydrated', 'BRAT diet', 'Probiotics', 'Rest'],
+        prevention: ['Food safety', 'Hand hygiene', 'Avoid contaminated water', 'Manage stress']
+      },
+      'constipation': {
+        title: 'Constipation',
+        severity: 'mild',
+        description: 'Difficulty in bowel movements or infrequent bowel movements.',
+        causes: ['Low fiber diet', 'Dehydration', 'Lack of exercise', 'Medications', 'Stress', 'IBS'],
+        whenToSeekHelp: 'Seek medical attention if constipation is severe or persistent.',
+        homeRemedies: ['Increase fiber intake', 'Stay hydrated', 'Regular exercise', 'Establish routine'],
+        prevention: ['High fiber diet', 'Stay hydrated', 'Regular exercise', 'Manage stress']
+      },
+      'bloating': {
+        title: 'Bloating',
+        severity: 'mild',
+        description: 'Feeling of fullness or swelling in the abdomen.',
+        causes: ['Gas', 'Overeating', 'Food intolerances', 'IBS', 'Constipation', 'Menstruation'],
+        whenToSeekHelp: 'Seek medical attention if bloating is severe or persistent.',
+        homeRemedies: ['Gentle exercise', 'Peppermint tea', 'Avoid gas-producing foods', 'Small frequent meals'],
+        prevention: ['Eat slowly', 'Avoid gas-producing foods', 'Regular exercise', 'Manage stress']
+      },
+      'migraine': {
+        title: 'Migraine',
+        severity: 'severe',
+        description: 'Intense, throbbing headache often accompanied by nausea, vomiting, and sensitivity to light.',
+        causes: ['Hormonal changes', 'Stress', 'Certain foods', 'Weather changes', 'Sleep disturbances', 'Genetics'],
+        whenToSeekHelp: 'Seek medical attention if migraines are frequent or severe.',
+        homeRemedies: ['Rest in dark room', 'Cold compress', 'Stay hydrated', 'Avoid triggers'],
+        prevention: ['Identify triggers', 'Regular sleep schedule', 'Stress management', 'Regular exercise']
+      },
+      'memory-problems': {
+        title: 'Memory Problems',
+        severity: 'moderate',
+        description: 'Difficulty remembering information, events, or experiences.',
+        causes: ['Stress', 'Sleep deprivation', 'Depression', 'Medications', 'Thyroid problems', 'Dementia'],
+        whenToSeekHelp: 'Seek medical attention if memory problems are severe or affecting daily life.',
+        homeRemedies: ['Mental exercises', 'Adequate sleep', 'Stress management', 'Regular exercise'],
+        prevention: ['Mental stimulation', 'Regular exercise', 'Adequate sleep', 'Manage stress']
+      },
+      'confusion': {
+        title: 'Confusion',
+        severity: 'high',
+        description: 'Difficulty thinking clearly, understanding, or making decisions.',
+        causes: ['Dehydration', 'Medications', 'Infections', 'Stroke', 'Dementia', 'Low blood sugar'],
+        whenToSeekHelp: 'Seek immediate medical attention if confusion is sudden or severe.',
+        homeRemedies: ['Stay hydrated', 'Rest', 'Eat regular meals', 'Stay calm'],
+        prevention: ['Stay hydrated', 'Regular meals', 'Manage medications', 'Regular checkups']
+      },
+      'seizures': {
+        title: 'Seizures',
+        severity: 'critical',
+        description: 'Sudden, uncontrolled electrical disturbances in the brain causing changes in behavior or consciousness.',
+        causes: ['Epilepsy', 'Head injury', 'Stroke', 'Brain tumors', 'Infections', 'Medications'],
+        whenToSeekHelp: 'Seek immediate medical attention for any seizure activity.',
+        homeRemedies: ['Stay with person', 'Protect from injury', 'Time the seizure', 'Stay calm'],
+        prevention: ['Take medications as prescribed', 'Avoid triggers', 'Regular checkups', 'Manage stress']
+      },
+      'numbness': {
+        title: 'Numbness',
+        severity: 'moderate',
+        description: 'Loss of sensation or feeling in part of the body.',
+        causes: ['Nerve compression', 'Diabetes', 'Stroke', 'Multiple sclerosis', 'Vitamin deficiencies', 'Injuries'],
+        whenToSeekHelp: 'Seek medical attention if numbness is sudden or severe.',
+        homeRemedies: ['Gentle movement', 'Warm compress', 'Massage', 'Stay active'],
+        prevention: ['Regular exercise', 'Manage chronic conditions', 'Avoid prolonged pressure', 'Healthy diet']
+      },
+      'joint-pain': {
+        title: 'Joint Pain',
+        severity: 'moderate',
+        description: 'Pain, stiffness, or discomfort in joints such as knees, hips, or hands.',
+        causes: ['Arthritis', 'Injuries', 'Overuse', 'Inflammation', 'Gout', 'Autoimmune conditions'],
+        whenToSeekHelp: 'Seek medical attention if joint pain is severe or persistent.',
+        homeRemedies: ['Rest', 'Ice and heat therapy', 'Gentle stretching', 'Over-the-counter pain relief'],
+        prevention: ['Regular exercise', 'Maintain healthy weight', 'Avoid overuse', 'Proper posture']
+      },
+      'back-pain': {
+        title: 'Back Pain',
+        severity: 'moderate',
+        description: 'Pain or discomfort in the back, ranging from mild to severe.',
+        causes: ['Muscle strain', 'Poor posture', 'Herniated disc', 'Arthritis', 'Osteoporosis', 'Injuries'],
+        whenToSeekHelp: 'Seek medical attention if back pain is severe or persistent.',
+        homeRemedies: ['Rest', 'Ice and heat therapy', 'Gentle stretching', 'Proper posture'],
+        prevention: ['Regular exercise', 'Proper lifting techniques', 'Good posture', 'Maintain healthy weight']
+      },
+      'muscle-weakness': {
+        title: 'Muscle Weakness',
+        severity: 'moderate',
+        description: 'Reduced strength in muscles, making it difficult to perform normal activities.',
+        causes: ['Lack of exercise', 'Neurological conditions', 'Medications', 'Infections', 'Autoimmune diseases'],
+        whenToSeekHelp: 'Seek medical attention if muscle weakness is sudden or progressive.',
+        homeRemedies: ['Gentle exercise', 'Physical therapy', 'Adequate nutrition', 'Rest'],
+        prevention: ['Regular exercise', 'Balanced diet', 'Adequate sleep', 'Manage chronic conditions']
+      },
+      'stiffness': {
+        title: 'Stiffness',
+        severity: 'mild',
+        description: 'Difficulty moving joints or muscles, often worse in the morning.',
+        causes: ['Arthritis', 'Overuse', 'Injuries', 'Inflammation', 'Poor posture', 'Lack of exercise'],
+        whenToSeekHelp: 'Seek medical attention if stiffness is severe or persistent.',
+        homeRemedies: ['Gentle stretching', 'Warm compress', 'Regular movement', 'Massage'],
+        prevention: ['Regular exercise', 'Proper posture', 'Avoid overuse', 'Stay active']
+      },
+      'swelling-joints': {
+        title: 'Swelling in Joints',
+        severity: 'moderate',
+        description: 'Enlargement or puffiness in joints due to fluid accumulation.',
+        causes: ['Arthritis', 'Injuries', 'Infections', 'Gout', 'Autoimmune conditions', 'Overuse'],
+        whenToSeekHelp: 'Seek medical attention if joint swelling is severe or persistent.',
+        homeRemedies: ['Ice therapy', 'Rest', 'Elevation', 'Compression'],
+        prevention: ['Regular exercise', 'Avoid overuse', 'Maintain healthy weight', 'Proper nutrition']
+      },
+      'limited-mobility': {
+        title: 'Limited Mobility',
+        severity: 'moderate',
+        description: 'Reduced ability to move freely or perform daily activities.',
+        causes: ['Arthritis', 'Injuries', 'Neurological conditions', 'Muscle weakness', 'Pain', 'Stiffness'],
+        whenToSeekHelp: 'Seek medical attention if mobility limitations are severe.',
+        homeRemedies: ['Physical therapy', 'Gentle exercise', 'Assistive devices', 'Pain management'],
+        prevention: ['Regular exercise', 'Maintain healthy weight', 'Proper posture', 'Avoid injuries']
+      },
+      'chills': {
+        title: 'Chills',
+        severity: 'moderate',
+        description: 'Feeling of coldness accompanied by shivering, often with fever.',
+        causes: ['Infections', 'Fever', 'Flu', 'Pneumonia', 'Urinary tract infections', 'Medications'],
+        whenToSeekHelp: 'Seek medical attention if chills are severe or persistent.',
+        homeRemedies: ['Stay warm', 'Rest', 'Stay hydrated', 'Over-the-counter medications'],
+        prevention: ['Good hygiene', 'Vaccinations', 'Avoid sick contacts', 'Dress appropriately']
+      },
+      'night-sweats': {
+        title: 'Night Sweats',
+        severity: 'moderate',
+        description: 'Excessive sweating during sleep that soaks through clothing or bedding.',
+        causes: ['Infections', 'Hormonal changes', 'Medications', 'Anxiety', 'Sleep apnea', 'Cancer'],
+        whenToSeekHelp: 'Seek medical attention if night sweats are frequent or severe.',
+        homeRemedies: ['Cool bedroom', 'Lightweight bedding', 'Stay hydrated', 'Stress management'],
+        prevention: ['Cool sleeping environment', 'Manage stress', 'Regular checkups', 'Avoid heavy meals before bed']
+      },
+      'weight-loss': {
+        title: 'Unexplained Weight Loss',
+        severity: 'moderate',
+        description: 'Significant weight loss without intentional dieting or exercise.',
+        causes: ['Hyperthyroidism', 'Diabetes', 'Cancer', 'Depression', 'Digestive disorders', 'Infections'],
+        whenToSeekHelp: 'Seek medical attention if weight loss is significant (more than 10 pounds) or rapid.',
+        homeRemedies: ['Balanced diet', 'Regular meals', 'Stay hydrated', 'Monitor weight'],
+        prevention: ['Regular checkups', 'Balanced diet', 'Manage stress', 'Monitor health']
+      },
+      'weight-gain': {
+        title: 'Unexplained Weight Gain',
+        severity: 'mild',
+        description: 'Significant weight gain without obvious cause such as overeating.',
+        causes: ['Hypothyroidism', 'Medications', 'Hormonal changes', 'Depression', 'Fluid retention', 'PCOS'],
+        whenToSeekHelp: 'Seek medical attention if weight gain is rapid or significant.',
+        homeRemedies: ['Balanced diet', 'Regular exercise', 'Stay hydrated', 'Monitor weight'],
+        prevention: ['Regular exercise', 'Balanced diet', 'Manage stress', 'Regular checkups']
+      },
+      'sleep-problems': {
+        title: 'Sleep Problems',
+        severity: 'moderate',
+        description: 'Difficulty falling asleep, staying asleep, or getting restful sleep.',
+        causes: ['Stress', 'Anxiety', 'Depression', 'Caffeine', 'Medications', 'Sleep apnea', 'Pain'],
+        whenToSeekHelp: 'Seek medical attention if sleep problems are severe or persistent.',
+        homeRemedies: ['Sleep hygiene', 'Relaxation techniques', 'Regular schedule', 'Avoid caffeine'],
+        prevention: ['Regular sleep schedule', 'Sleep hygiene', 'Manage stress', 'Regular exercise']
+      }
+    };
+
+    function searchSymptoms() {
+      const searchTerm = document.getElementById('symptomSearch').value.toLowerCase();
+      const resultsDiv = document.getElementById('searchResults');
+      
+      if (searchTerm.length < 2) {
+        resultsDiv.style.display = 'none';
+        return;
+      }
+
+      const matchingSymptoms = Object.keys(symptomDatabase).filter(key => 
+        symptomDatabase[key].title.toLowerCase().includes(searchTerm)
+      );
+
+      if (matchingSymptoms.length > 0) {
+        resultsDiv.innerHTML = matchingSymptoms.map(key => 
+          `<div class="search-result-item" onclick="showSymptomDetail('${key}')">
+            ${symptomDatabase[key].title}
+          </div>`
+        ).join('');
+        resultsDiv.style.display = 'block';
+      } else {
+        resultsDiv.innerHTML = '<div style="padding: 1rem; color: var(--gray-600);">No symptoms found matching your search.</div>';
+        resultsDiv.style.display = 'block';
+      }
+    }
+
+    function showSymptomDetail(symptomKey) {
+      const symptom = symptomDatabase[symptomKey];
+      if (!symptom) {
+        alert('Symptom information not available yet. This feature is being developed.');
+        return;
+      }
+
+      const modal = document.getElementById('symptomDetailModal');
+      const title = document.getElementById('symptomTitle');
+      const content = document.getElementById('symptomContent');
+
+      title.textContent = symptom.title;
+      
+      const severityClass = `severity-${symptom.severity}`;
+      const severityText = symptom.severity.charAt(0).toUpperCase() + symptom.severity.slice(1);
+
+      content.innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+          <span class="severity-badge ${severityClass}">${severityText} Severity</span>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>Description</h4>
+          <p>${symptom.description}</p>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>Possible Causes</h4>
+          <ul>
+            ${symptom.causes.map(cause => `<li>${cause}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>When to Seek Medical Help</h4>
+          <p>${symptom.whenToSeekHelp}</p>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>Home Remedies</h4>
+          <ul>
+            ${symptom.homeRemedies.map(remedy => `<li>${remedy}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>Prevention</h4>
+          <ul>
+            ${symptom.prevention.map(prevention => `<li>${prevention}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <div style="background: #fef3c7; padding: 1rem; border-radius: 6px; border-left: 4px solid #f59e0b;">
+          <strong>⚠️ Important:</strong> This information is for educational purposes only and should not replace professional medical advice. Always consult a healthcare provider for proper diagnosis and treatment.
+        </div>
+      `;
+
+      modal.style.display = 'block';
+    }
+
+    function closeSymptomModal() {
+      document.getElementById('symptomDetailModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('symptomDetailModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>

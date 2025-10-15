@@ -21,10 +21,10 @@
           </div>
           <div class="nav-links">
             <ul>
-              <li>Diagnostic Tools</li>
-              <li>Symptoms</li>
-              <li>Conditons</li>
-              <li>Health And Wellness</li>
+              <li><a href="diagnostic-tools.html">Diagnostic Tools</a></li>
+              <li><a href="symptoms.html">Symptoms</a></li>
+              <li><a href="conditions.html">Conditions</a></li>
+              <li><a href="wellness.html">Health And Wellness</a></li>
 
             </ul>
           </div>
@@ -48,7 +48,7 @@
         </div>
         <div class="img-outer">
           <div class="img-box">
-            <img src="chatbot.webp" alt="Chatbot Image" />
+            <img src="chatbot.webp" alt="Chatbot" />
           </div>
         </div>
       </div>
@@ -70,9 +70,15 @@
           <ul id="conversation-list"></ul>
         </aside>
         <section id="chat-main">
-          <div id="chat-box"></div>
+          <div id="chat-box">
+            <div id="welcome-message" style="text-align: center; padding: 2rem; color: #8d6e63; font-size: 1.1rem; opacity: 0.7;">
+              <h3 style="margin-bottom: 1rem; color: #6f5950;">👋 Hello! I'm MedBuddy</h3>
+              <p>How can I help you with your health today?</p>
+              <p style="font-size: 0.9rem; margin-top: 1rem; font-style: italic;">Ask me about symptoms, conditions, or general health questions</p>
+            </div>
+          </div>
           <div id="chat-input-row" style="display:flex; align-items:center; gap:8px; padding: 0.75rem 1rem;">
-            <input type="text" id="user-input" placeholder="Type your message here">
+            <input type="text" id="user-input" placeholder="How can I help you with your health today?">
             <button id="mic-button" aria-label="Start voice input" title="Voice input">
               <span id="mic-icon">🎤</span>
             </button>
@@ -548,7 +554,7 @@
     newChatBtn.addEventListener('click', () => {
       sessionId = createNewSessionId();
       conversationHistory = [{ role: 'system', content: SYSTEM_PROMPT }];
-      chatBox.innerHTML = '';
+      chatBox.innerHTML = '<div id="welcome-message" style="text-align: center; padding: 2rem; color: #8d6e63; font-size: 1.1rem; opacity: 0.7;"><h3 style="margin-bottom: 1rem; color: #6f5950;">👋 Hello! I\'m MedBuddy</h3><p>How can I help you with your health today?</p><p style="font-size: 0.9rem; margin-top: 1rem; font-style: italic;">Ask me about symptoms, conditions, or general health questions</p></div>';
       saveHistory();
       userInput.focus();
     });
@@ -642,6 +648,12 @@
       sendButton.addEventListener('click', async () => {
         const message = userInput.value.trim();
         if (!message) return;
+
+        // Hide welcome message if it exists
+        const welcomeMessage = document.getElementById('welcome-message');
+        if (welcomeMessage) {
+          welcomeMessage.style.display = 'none';
+        }
 
         // Add user message to chat UI
         const userMessage = document.createElement('div');
@@ -775,7 +787,11 @@
     }
 
     function stopListening() {
-      try { recognition && recognition.stop(); } catch(e) {}
+      try { 
+        recognition && recognition.stop(); 
+      } catch(e) {
+        console.warn('Error stopping speech recognition:', e);
+      }
       setListeningState(false);
     }
 

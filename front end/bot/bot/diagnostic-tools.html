@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnostic Tools - MedBuddy</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="stylesheet" href="hackathontask.css" />
+  <style>
+    .diagnostic-container {
+      max-width: 1400px;
+      min-height: 100vh;
+    }
+    
+    .hero-section {
+      background: var(--gradient-hero);
+      border-radius: 24px;
+      padding: 4rem 3rem;
+      margin-bottom: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 40%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      transform: rotate(15deg);
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 1.5rem;
+      line-height: 1.1;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    
+    .hero-stats {
+      display: flex;
+      gap: 3rem;
+      margin-top: 2rem;
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--white);
+      display: block;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.8);
+      margin-top: 0.5rem;
+    }
+    
+    .diagnostic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+    
+    .diagnostic-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      border: 1px solid rgba(236, 72, 153, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .diagnostic-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-primary);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .diagnostic-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(236, 72, 153, 0.15);
+    }
+    
+    .diagnostic-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .card-icon {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+    
+    .diagnostic-card h3 {
+      color: var(--gray-800);
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+    
+    .diagnostic-card p {
+      color: var(--gray-600);
+      margin-bottom: 2rem;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+    
+    .diagnostic-btn {
+      background: var(--gradient-primary);
+      color: var(--white);
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      font-size: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .diagnostic-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .diagnostic-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(236, 72, 153, 0.3);
+    }
+    
+    .diagnostic-btn:hover::before {
+      left: 100%;
+    }
+    
+    .symptom-checker {
+      background: var(--gray-50);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .symptom-input {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      transition: var(--transition-fast);
+    }
+    
+    .symptom-input:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+    }
+    
+    .severity-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin: 1rem 0;
+      padding: 1rem;
+      background: var(--white);
+      border-radius: 8px;
+    }
+    
+    .severity-level {
+      text-align: center;
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+    
+    .severity-red { background: #fee2e2; color: #dc2626; }
+    .severity-orange { background: #fed7aa; color: #ea580c; }
+    .severity-yellow { background: #fef3c7; color: #d97706; }
+    .severity-blue { background: #dbeafe; color: #2563eb; }
+    .severity-green { background: #dcfce7; color: #16a34a; }
+    
+    .back-btn {
+      background: var(--gray-200);
+      color: var(--gray-700);
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-normal);
+      margin-bottom: 2rem;
+    }
+    
+    .back-btn:hover {
+      background: var(--gray-300);
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="lower-out">
+      <div class="lower-nav">
+        <div class="site-name">
+          <h1><a href="index.html" style="text-decoration: none; color: inherit;">MedBuddy</a></h1>
+        </div>
+        <div class="nav-links">
+          <ul>
+            <li><a href="diagnostic-tools.html" style="color: var(--primary-blue); font-weight: 600;">Diagnostic Tools</a></li>
+            <li><a href="symptoms.html">Symptoms</a></li>
+            <li><a href="conditions.html">Conditions</a></li>
+            <li><a href="wellness.html">Health And Wellness</a></li>
+          </ul>
+        </div>
+        <div class="nav-button">
+          <button><b>Online<br>Consultation</b></button>
+          <button><b>Medical Facilities<br>Near Me</b></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="diagnostic-container">
+    <div class="hero-section">
+      <div class="hero-content">
+        <span class="tilted" style="color: rgba(255,255,255,0.9); font-size: 1rem; letter-spacing: 2px;">Diagnostic Tools</span>
+        <h1 class="hero-title">Advanced Health<br>Diagnostic Tools</h1>
+        <p class="hero-subtitle">Use our comprehensive diagnostic tools to analyze symptoms, assess health conditions, and get personalized recommendations powered by AI.</p>
+        
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-number">6+</span>
+            <span class="stat-label">Diagnostic Tools</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">AI</span>
+            <span class="stat-label">Powered Analysis</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">24/7</span>
+            <span class="stat-label">Available</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagnostic-grid">
+      <div class="diagnostic-card">
+        <span class="card-icon">🔍</span>
+        <h3>Symptom Analyzer</h3>
+        <p>Enter your symptoms and get AI-powered analysis with possible conditions, severity assessment, and recommended actions.</p>
+        <button class="diagnostic-btn" onclick="openSymptomAnalyzer()">Start Analysis</button>
+      </div>
+
+      <div class="diagnostic-card">
+        <span class="card-icon">🩺</span>
+        <h3>Body System Checker</h3>
+        <p>Select a body system (cardiovascular, respiratory, digestive, etc.) and get targeted health assessments.</p>
+        <button class="diagnostic-btn" onclick="openBodySystemChecker()">Check Body Systems</button>
+      </div>
+
+      <div class="diagnostic-card">
+        <span class="card-icon">📊</span>
+        <h3>Health Risk Assessment</h3>
+        <p>Complete a comprehensive questionnaire to assess your health risks and get personalized prevention strategies.</p>
+        <button class="diagnostic-btn" onclick="openRiskAssessment()">Start Assessment</button>
+      </div>
+
+      <div class="diagnostic-card">
+        <span class="card-icon">🧬</span>
+        <h3>Genetic Health Insights</h3>
+        <p>Learn about genetic predispositions and how they might affect your health (educational content only).</p>
+        <button class="diagnostic-btn" onclick="openGeneticInsights()">Explore Genetics</button>
+      </div>
+
+      <div class="diagnostic-card">
+        <span class="card-icon">📱</span>
+        <h3>Vital Signs Monitor</h3>
+        <p>Track and analyze your vital signs including blood pressure, heart rate, temperature, and more.</p>
+        <button class="diagnostic-btn" onclick="openVitalSignsMonitor()">Monitor Vitals</button>
+      </div>
+
+      <div class="diagnostic-card">
+        <span class="card-icon">🔬</span>
+        <h3>Lab Results Interpreter</h3>
+        <p>Upload or enter your lab results to get AI-powered interpretation and explanations.</p>
+        <button class="diagnostic-btn" onclick="openLabInterpreter()">Interpret Results</button>
+      </div>
+
+      <div class="diagnostic-card">
+        <span class="card-icon">⚖️</span>
+        <h3>BMI Calculator</h3>
+        <p>Calculate your Body Mass Index and get personalized health insights and recommendations.</p>
+        <button class="diagnostic-btn" onclick="openBMICalculator()">Calculate BMI</button>
+      </div>
+    </div>
+
+    <!-- Symptom Analyzer Modal -->
+    <div id="symptomAnalyzerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000;">
+      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 16px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+          <h2 style="color: var(--primary-blue); margin: 0;">Symptom Analyzer</h2>
+          <button onclick="closeModal('symptomAnalyzerModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+        </div>
+        
+        <div class="symptom-checker">
+          <h3>Describe Your Symptoms</h3>
+          <textarea class="symptom-input" id="symptomInput" placeholder="Describe your symptoms in detail. For example: 'I have been experiencing chest pain for 2 days, shortness of breath, and fatigue...'" rows="4"></textarea>
+          
+          <h4>Severity Scale</h4>
+          <div class="severity-indicator">
+            <div class="severity-level severity-green">GREEN<br>0-20<br>Mild</div>
+            <div class="severity-level severity-blue">BLUE<br>20-40<br>Low</div>
+            <div class="severity-level severity-yellow">YELLOW<br>40-60<br>Moderate</div>
+            <div class="severity-level severity-orange">ORANGE<br>60-80<br>High</div>
+            <div class="severity-level severity-red">RED<br>80-100<br>Critical</div>
+          </div>
+          
+          <button class="diagnostic-btn" onclick="analyzeSymptoms()">Analyze Symptoms</button>
+          
+          <div id="analysisResult" style="margin-top: 2rem; padding: 1rem; background: var(--gray-50); border-radius: 8px; display: none;">
+            <h4>Analysis Result</h4>
+            <div id="resultContent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body System Checker Modal -->
+    <div id="bodySystemModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000;">
+      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 16px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+          <h2 style="color: var(--primary-blue); margin: 0;">Body System Checker</h2>
+          <button onclick="closeModal('bodySystemModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <button class="diagnostic-btn" onclick="checkSystem('cardiovascular')">❤️ Cardiovascular</button>
+          <button class="diagnostic-btn" onclick="checkSystem('respiratory')">🫁 Respiratory</button>
+          <button class="diagnostic-btn" onclick="checkSystem('digestive')">🫃 Digestive</button>
+          <button class="diagnostic-btn" onclick="checkSystem('nervous')">🧠 Nervous</button>
+          <button class="diagnostic-btn" onclick="checkSystem('musculoskeletal')">🦴 Musculoskeletal</button>
+          <button class="diagnostic-btn" onclick="checkSystem('endocrine')">⚕️ Endocrine</button>
+        </div>
+        
+        <div id="systemResult" style="margin-top: 2rem; padding: 1rem; background: var(--gray-50); border-radius: 8px; display: none;">
+          <h4>System Assessment</h4>
+          <div id="systemContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BMI Calculator Modal -->
+    <div id="bmiCalculatorModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000;">
+      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 16px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+          <h2 style="color: var(--primary-blue); margin: 0;">BMI Calculator</h2>
+          <button onclick="closeModal('bmiCalculatorModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+        </div>
+        
+        <div class="symptom-checker">
+          <h3>Enter Your Measurements</h3>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label for="height" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">Height</label>
+              <input type="number" id="height" class="symptom-input" placeholder="Height in cm" min="50" max="300" step="0.1">
+            </div>
+            <div>
+              <label for="weight" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">Weight</label>
+              <input type="number" id="weight" class="symptom-input" placeholder="Weight in kg" min="10" max="500" step="0.1">
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 1rem;">
+            <label for="age" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">Age (Optional)</label>
+            <input type="number" id="age" class="symptom-input" placeholder="Age in years" min="1" max="120">
+          </div>
+          
+          <div style="margin-bottom: 1rem;">
+            <label for="gender" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">Gender (Optional)</label>
+            <select id="gender" class="symptom-input" style="margin-bottom: 0;">
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+          
+          <button class="diagnostic-btn" onclick="calculateBMI()">Calculate BMI</button>
+          
+          <div id="bmiResult" style="margin-top: 2rem; padding: 1rem; background: var(--gray-50); border-radius: 8px; display: none;">
+            <h4>BMI Results</h4>
+            <div id="bmiContent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openSymptomAnalyzer() {
+      document.getElementById('symptomAnalyzerModal').style.display = 'block';
+    }
+
+    function openBodySystemChecker() {
+      document.getElementById('bodySystemModal').style.display = 'block';
+    }
+
+    function openRiskAssessment() {
+      alert('Health Risk Assessment feature coming soon! This will include comprehensive questionnaires and personalized risk analysis.');
+    }
+
+    function openGeneticInsights() {
+      alert('Genetic Health Insights feature coming soon! This will provide educational content about genetic health factors.');
+    }
+
+    function openVitalSignsMonitor() {
+      alert('Vital Signs Monitor feature coming soon! This will allow tracking of blood pressure, heart rate, and other vital signs.');
+    }
+
+    function openLabInterpreter() {
+      alert('Lab Results Interpreter feature coming soon! This will help interpret blood tests and other lab results.');
+    }
+
+    function openBMICalculator() {
+      document.getElementById('bmiCalculatorModal').style.display = 'block';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    function analyzeSymptoms() {
+      const symptoms = document.getElementById('symptomInput').value.trim();
+      if (!symptoms) {
+        alert('Please describe your symptoms first.');
+        return;
+      }
+
+      // Simulate AI analysis
+      const resultDiv = document.getElementById('analysisResult');
+      const contentDiv = document.getElementById('resultContent');
+      
+      contentDiv.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+          <strong>Input:</strong> ${symptoms}
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <strong>Possible Conditions:</strong>
+          <ul>
+            <li>Condition A (60% match)</li>
+            <li>Condition B (45% match)</li>
+            <li>Condition C (30% match)</li>
+          </ul>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <strong>Severity Assessment:</strong> <span style="color: var(--accent-orange); font-weight: bold;">ORANGE (65/100)</span>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <strong>Recommended Actions:</strong>
+          <ul>
+            <li>Consult a doctor within 24-48 hours</li>
+            <li>Monitor symptoms closely</li>
+            <li>Rest and avoid strenuous activities</li>
+            <li>Consider over-the-counter pain relief if appropriate</li>
+          </ul>
+        </div>
+        <div style="background: #fef3c7; padding: 1rem; border-radius: 6px; border-left: 4px solid #f59e0b;">
+          <strong>⚠️ Important:</strong> This is not a substitute for professional medical advice. Please consult a healthcare provider for proper diagnosis and treatment.
+        </div>
+      `;
+      
+      resultDiv.style.display = 'block';
+    }
+
+    function checkSystem(system) {
+      const systemNames = {
+        'cardiovascular': 'Cardiovascular System',
+        'respiratory': 'Respiratory System',
+        'digestive': 'Digestive System',
+        'nervous': 'Nervous System',
+        'musculoskeletal': 'Musculoskeletal System',
+        'endocrine': 'Endocrine System'
+      };
+
+      const resultDiv = document.getElementById('systemResult');
+      const contentDiv = document.getElementById('systemContent');
+      
+      contentDiv.innerHTML = `
+        <h5>${systemNames[system]} Assessment</h5>
+        <p>This system check will evaluate common conditions and symptoms related to the ${systemNames[system].toLowerCase()}.</p>
+        <div style="background: #dbeafe; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+          <strong>Common ${systemNames[system]} Symptoms to Check:</strong>
+          <ul>
+            <li>Symptom 1</li>
+            <li>Symptom 2</li>
+            <li>Symptom 3</li>
+          </ul>
+        </div>
+        <button class="diagnostic-btn" style="margin-top: 1rem;" onclick="startSystemAssessment('${system}')">Start Assessment</button>
+      `;
+      
+      resultDiv.style.display = 'block';
+    }
+
+    function startSystemAssessment(system) {
+      alert(`Starting ${system} assessment... This feature will include detailed questionnaires and health checks specific to this body system.`);
+    }
+
+    function calculateBMI() {
+      const height = parseFloat(document.getElementById('height').value);
+      const weight = parseFloat(document.getElementById('weight').value);
+      const age = parseInt(document.getElementById('age').value) || null;
+      const gender = document.getElementById('gender').value || null;
+
+      // Validate inputs
+      if (!height || !weight) {
+        alert('Please enter both height and weight.');
+        return;
+      }
+
+      if (height < 50 || height > 300) {
+        alert('Please enter a valid height between 50-300 cm.');
+        return;
+      }
+
+      if (weight < 10 || weight > 500) {
+        alert('Please enter a valid weight between 10-500 kg.');
+        return;
+      }
+
+      // Calculate BMI: weight (kg) / height (m)²
+      const heightInMeters = height / 100;
+      const bmi = weight / (heightInMeters * heightInMeters);
+      const bmiRounded = Math.round(bmi * 10) / 10;
+
+      // Determine BMI category
+      let category, categoryColor, riskLevel, recommendations;
+      
+      if (bmi < 18.5) {
+        category = "Underweight";
+        categoryColor = "#3b82f6"; // blue
+        riskLevel = "Low-Medium";
+        recommendations = [
+          "Consider consulting a healthcare provider to rule out underlying health conditions",
+          "Focus on a balanced diet with adequate calories and nutrients",
+          "Consider working with a nutritionist to develop a healthy weight gain plan",
+          "Engage in strength training to build muscle mass"
+        ];
+      } else if (bmi >= 18.5 && bmi < 25) {
+        category = "Normal Weight";
+        categoryColor = "#10b981"; // green
+        riskLevel = "Low";
+        recommendations = [
+          "Maintain your current healthy lifestyle",
+          "Continue regular physical activity (at least 150 minutes per week)",
+          "Eat a balanced diet rich in fruits, vegetables, and whole grains",
+          "Get regular health checkups"
+        ];
+      } else if (bmi >= 25 && bmi < 30) {
+        category = "Overweight";
+        categoryColor = "#f59e0b"; // orange
+        riskLevel = "Medium";
+        recommendations = [
+          "Consider gradual weight loss through diet and exercise",
+          "Reduce calorie intake by 500-750 calories per day",
+          "Increase physical activity to at least 150-300 minutes per week",
+          "Focus on whole foods and limit processed foods",
+          "Consider consulting a healthcare provider for personalized advice"
+        ];
+      } else {
+        category = "Obese";
+        categoryColor = "#ef4444"; // red
+        riskLevel = "High";
+        recommendations = [
+          "Consult a healthcare provider for a comprehensive weight management plan",
+          "Consider working with a registered dietitian",
+          "Aim for 1-2 pounds of weight loss per week",
+          "Increase physical activity gradually",
+          "Consider behavioral therapy or support groups",
+          "Monitor for obesity-related health conditions"
+        ];
+      }
+
+      // Additional considerations based on age and gender
+      let additionalInfo = "";
+      if (age && age >= 65) {
+        additionalInfo += "<p><strong>Note for Seniors:</strong> BMI ranges may be slightly different for older adults. Consult your healthcare provider for age-appropriate guidance.</p>";
+      }
+      if (gender === 'female' && age && age >= 18 && age <= 50) {
+        additionalInfo += "<p><strong>Note for Women:</strong> BMI can be affected by factors like pregnancy, menopause, and hormonal changes.</p>";
+      }
+
+      // Display results
+      const resultDiv = document.getElementById('bmiResult');
+      const contentDiv = document.getElementById('bmiContent');
+      
+      contentDiv.innerHTML = `
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <div style="font-size: 3rem; font-weight: 800; color: ${categoryColor}; margin-bottom: 0.5rem;">
+            ${bmiRounded}
+          </div>
+          <div style="font-size: 1.25rem; font-weight: 600; color: ${categoryColor}; margin-bottom: 0.5rem;">
+            ${category}
+          </div>
+          <div style="color: var(--gray-600); font-size: 0.9rem;">
+            Risk Level: ${riskLevel}
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h5 style="color: var(--gray-800); margin-bottom: 0.75rem;">Your Measurements:</h5>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
+            <div><strong>Height:</strong> ${height} cm</div>
+            <div><strong>Weight:</strong> ${weight} kg</div>
+            ${age ? `<div><strong>Age:</strong> ${age} years</div>` : ''}
+            ${gender ? `<div><strong>Gender:</strong> ${gender.charAt(0).toUpperCase() + gender.slice(1)}</div>` : ''}
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <h5 style="color: var(--gray-800); margin-bottom: 0.75rem;">Health Recommendations:</h5>
+          <ul style="margin-left: 1rem; line-height: 1.6;">
+            ${recommendations.map(rec => `<li style="margin-bottom: 0.5rem;">${rec}</li>`).join('')}
+          </ul>
+        </div>
+
+        ${additionalInfo}
+
+        <div style="background: #fef3c7; padding: 1rem; border-radius: 6px; border-left: 4px solid #f59e0b; margin-top: 1rem;">
+          <strong>⚠️ Important:</strong> BMI is a screening tool and doesn't account for muscle mass, bone density, or body composition. It's not suitable for athletes, pregnant women, or people with high muscle mass. Always consult a healthcare provider for personalized health advice.
+        </div>
+
+        <div style="background: #dbeafe; padding: 1rem; border-radius: 6px; border-left: 4px solid #3b82f6; margin-top: 1rem;">
+          <strong>📊 BMI Categories:</strong><br>
+          • Underweight: BMI < 18.5<br>
+          • Normal weight: BMI 18.5-24.9<br>
+          • Overweight: BMI 25-29.9<br>
+          • Obese: BMI ≥ 30
+        </div>
+      `;
+      
+      resultDiv.style.display = 'block';
+    }
+
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+      const modals = document.querySelectorAll('[id$="Modal"]');
+      modals.forEach(modal => {
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

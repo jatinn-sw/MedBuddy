@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conditions - MedBuddy</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="stylesheet" href="hackathontask.css" />
+  <style>
+    .conditions-container {
+      max-width: 1400px;
+      min-height: 100vh;
+    }
+    
+    .hero-section {
+      background: var(--gradient-hero);
+      border-radius: 24px;
+      padding: 4rem 3rem;
+      margin-bottom: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 40%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      transform: rotate(15deg);
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 1.5rem;
+      line-height: 1.1;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    
+    .search-section {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 3rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      margin-bottom: 3rem;
+      border: 1px solid rgba(236, 72, 153, 0.1);
+    }
+    
+    .search-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 1rem;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 1.5rem;
+      border: 2px solid var(--gray-200);
+      border-radius: 12px;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+      background: var(--gray-50);
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+    }
+    
+    .conditions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+    
+    .condition-category {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      border: 1px solid rgba(236, 72, 153, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .condition-category::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-primary);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .condition-category:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(236, 72, 153, 0.15);
+    }
+    
+    .condition-category:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .category-icon {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+    
+    .condition-category h3 {
+      color: var(--gray-800);
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+    }
+    
+    .condition-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .condition-item {
+      padding: 1rem;
+      margin: 0.75rem 0;
+      background: var(--gray-50);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 500;
+    }
+    
+    .condition-item:hover {
+      background: var(--accent-teal);
+      border-left-color: var(--primary-blue);
+      transform: translateX(8px);
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.15);
+    }
+    
+    .condition-severity {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+    
+    .severity-mild { background: #dcfce7; color: #16a34a; }
+    .severity-moderate { background: #fef3c7; color: #d97706; }
+    .severity-severe { background: #fed7aa; color: #ea580c; }
+    .severity-critical { background: #fee2e2; color: #dc2626; }
+    
+    .condition-detail-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      border: 1px solid rgba(236, 72, 153, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="lower-out">
+      <div class="lower-nav">
+        <div class="site-name">
+          <h1><a href="index.html" style="text-decoration: none; color: inherit;">MedBuddy</a></h1>
+        </div>
+        <div class="nav-links">
+          <ul>
+            <li><a href="diagnostic-tools.html">Diagnostic Tools</a></li>
+            <li><a href="symptoms.html">Symptoms</a></li>
+            <li><a href="conditions.html" style="color: var(--primary-blue); font-weight: 600;">Conditions</a></li>
+            <li><a href="wellness.html">Health And Wellness</a></li>
+          </ul>
+        </div>
+        <div class="nav-button">
+          <button><b>Online<br>Consultation</b></button>
+          <button><b>Medical Facilities<br>Near Me</b></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conditions-container">
+    <div class="hero-section">
+      <div class="hero-content">
+        <span class="tilted" style="color: rgba(255,255,255,0.9); font-size: 1rem; letter-spacing: 2px;">Conditions</span>
+        <h1 class="hero-title">Medical Conditions<br>Database</h1>
+        <p class="hero-subtitle">Comprehensive information about various medical conditions, their symptoms, treatments, and management strategies.</p>
+      </div>
+    </div>
+
+    <div class="search-section">
+      <h3 class="search-title">🔍 Search Conditions</h3>
+      <input type="text" class="search-input" id="conditionSearch" placeholder="Type a condition to search (e.g., diabetes, hypertension, asthma)..." onkeyup="searchConditions()">
+      <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <div class="conditions-grid">
+            <div class="condition-category">
+        <span class="category-icon">🧠</span>
+        <h3>Neurological Conditions</h3>
+        <ul class="condition-list">
+          <li class="condition-item" onclick="showConditionDetail('migraine')">
+            <span>Migraine</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('epilepsy')">
+            <span>Epilepsy</span>
+            <span class="condition-severity severity-severe">Severe</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('parkinsons')">
+            <span>Parkinson's Disease</span>
+            <span class="condition-severity severity-severe">Severe</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('alzheimers')">
+            <span>Alzheimer's Disease</span>
+            <span class="condition-severity severity-critical">Critical</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('multiple-sclerosis')">
+            <span>Multiple Sclerosis</span>
+            <span class="condition-severity severity-severe">Severe</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="condition-category">
+        <span class="category-icon">🦴</span>
+        <h3>Musculoskeletal Conditions</h3>
+        <ul class="condition-list">
+          <li class="condition-item" onclick="showConditionDetail('arthritis')">
+            <span>Arthritis</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('osteoporosis')">
+            <span>Osteoporosis</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('fibromyalgia')">
+            <span>Fibromyalgia</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('herniated-disc')">
+            <span>Herniated Disc</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('bursitis')">
+            <span>Bursitis</span>
+            <span class="condition-severity severity-mild">Mild</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="condition-category">
+        <span class="category-icon">⚕️</span>
+        <h3>Endocrine Conditions</h3>
+        <ul class="condition-list">
+          <li class="condition-item" onclick="showConditionDetail('diabetes')">
+            <span>Diabetes</span>
+            <span class="condition-severity severity-severe">Severe</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('thyroid-disorders')">
+            <span>Thyroid Disorders</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('adrenal-disorders')">
+            <span>Adrenal Disorders</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('pcos')">
+            <span>PCOS</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('metabolic-syndrome')">
+            <span>Metabolic Syndrome</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+        </ul>
+      </div>
+
+      
+      <div class="condition-category">
+        <span class="category-icon">🫀</span>
+        <h3>Cardiovascular Conditions</h3>
+        <ul class="condition-list">
+          <li class="condition-item" onclick="showConditionDetail('hypertension')">
+            <span>Hypertension</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('coronary-artery-disease')">
+            <span>Coronary Artery Disease</span>
+            <span class="condition-severity severity-severe">Severe</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('heart-failure')">
+            <span>Heart Failure</span>
+            <span class="condition-severity severity-severe">Severe</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('arrhythmia')">
+            <span>Arrhythmia</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('stroke')">
+            <span>Stroke</span>
+            <span class="condition-severity severity-critical">Critical</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="condition-category">
+        <span class="category-icon">🫁</span>
+        <h3>Respiratory Conditions</h3>
+        <ul class="condition-list">
+          <li class="condition-item" onclick="showConditionDetail('asthma')">
+            <span>Asthma</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('copd')">
+            <span>COPD</span>
+            <span class="condition-severity severity-severe">Severe</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('pneumonia')">
+            <span>Pneumonia</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('bronchitis')">
+            <span>Bronchitis</span>
+            <span class="condition-severity severity-mild">Mild</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('lung-cancer')">
+            <span>Lung Cancer</span>
+            <span class="condition-severity severity-critical">Critical</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="condition-category">
+        <span class="category-icon">🫃</span>
+        <h3>Digestive Conditions</h3>
+        <ul class="condition-list">
+          <li class="condition-item" onclick="showConditionDetail('ibs')">
+            <span>Irritable Bowel Syndrome</span>
+            <span class="condition-severity severity-mild">Mild</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('crohns')">
+            <span>Crohn's Disease</span>
+            <span class="condition-severity severity-severe">Severe</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('ulcerative-colitis')">
+            <span>Ulcerative Colitis</span>
+            <span class="condition-severity severity-severe">Severe</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('gastritis')">
+            <span>Gastritis</span>
+            <span class="condition-severity severity-mild">Mild</span>
+          </li>
+          <li class="condition-item" onclick="showConditionDetail('gallstones')">
+            <span>Gallstones</span>
+            <span class="condition-severity severity-moderate">Moderate</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Condition Detail Modal -->
+  <div id="conditionDetailModal" class="condition-detail-modal">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 id="conditionTitle" style="color: var(--primary-blue); margin: 0;"></h2>
+        <button onclick="closeConditionModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+      </div>
+      
+      <div id="conditionContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const conditionDatabase = {
+      'hypertension': {
+        title: 'Hypertension (High Blood Pressure)',
+        severity: 'moderate',
+        prevalence: '1 in 3 adults',
+        description: 'A chronic condition where blood pressure is consistently elevated above normal levels.',
+        symptoms: ['Headaches', 'Shortness of breath', 'Nosebleeds', 'Dizziness', 'Chest pain'],
+        causes: ['Genetics', 'Age', 'Obesity', 'Sedentary lifestyle', 'High salt intake', 'Stress'],
+        treatments: ['Lifestyle changes', 'ACE inhibitors', 'Beta-blockers', 'Diuretics', 'Calcium channel blockers'],
+        complications: ['Heart disease', 'Stroke', 'Kidney disease', 'Vision problems', 'Metabolic syndrome'],
+        prevention: ['Regular exercise', 'Healthy diet', 'Weight management', 'Limit alcohol', 'Stress management'],
+        management: ['Regular monitoring', 'Medication adherence', 'Diet modifications', 'Exercise routine', 'Regular check-ups']
+      },
+      'coronary-artery-disease': {
+        title: 'Coronary Artery Disease',
+        severity: 'severe',
+        prevalence: '1 in 20 adults',
+        description: 'A condition where the coronary arteries become narrowed or blocked, reducing blood flow to the heart.',
+        symptoms: ['Chest pain (angina)', 'Shortness of breath', 'Fatigue', 'Heart palpitations', 'Sweating'],
+        causes: ['Atherosclerosis', 'High cholesterol', 'High blood pressure', 'Smoking', 'Diabetes', 'Family history'],
+        treatments: ['Lifestyle changes', 'Medications', 'Angioplasty', 'Stent placement', 'Bypass surgery'],
+        complications: ['Heart attack', 'Heart failure', 'Arrhythmias', 'Sudden cardiac death'],
+        prevention: ['Healthy diet', 'Regular exercise', 'No smoking', 'Control blood pressure', 'Manage diabetes'],
+        management: ['Medication adherence', 'Regular monitoring', 'Cardiac rehabilitation', 'Lifestyle modifications']
+      },
+      'heart-failure': {
+        title: 'Heart Failure',
+        severity: 'severe',
+        prevalence: '1 in 50 adults',
+        description: 'A condition where the heart cannot pump blood effectively to meet the body\'s needs.',
+        symptoms: ['Shortness of breath', 'Fatigue', 'Swelling in legs', 'Rapid heartbeat', 'Coughing'],
+        causes: ['Coronary artery disease', 'High blood pressure', 'Heart attack', 'Diabetes', 'Heart valve problems'],
+        treatments: ['ACE inhibitors', 'Beta-blockers', 'Diuretics', 'Lifestyle changes', 'Heart transplant'],
+        complications: ['Kidney problems', 'Liver problems', 'Heart rhythm problems', 'Pulmonary hypertension'],
+        prevention: ['Control blood pressure', 'Manage diabetes', 'Regular exercise', 'Healthy diet', 'No smoking'],
+        management: ['Medication adherence', 'Fluid restriction', 'Regular monitoring', 'Lifestyle modifications']
+      },
+      'arrhythmia': {
+        title: 'Arrhythmia',
+        severity: 'moderate',
+        prevalence: '1 in 25 adults',
+        description: 'Abnormal heart rhythm that can cause the heart to beat too fast, too slow, or irregularly.',
+        symptoms: ['Palpitations', 'Dizziness', 'Shortness of breath', 'Chest pain', 'Fainting'],
+        causes: ['Heart disease', 'High blood pressure', 'Diabetes', 'Smoking', 'Excessive alcohol', 'Stress'],
+        treatments: ['Medications', 'Cardioversion', 'Ablation', 'Pacemaker', 'Implantable defibrillator'],
+        complications: ['Stroke', 'Heart failure', 'Sudden cardiac arrest', 'Blood clots'],
+        prevention: ['Healthy lifestyle', 'Control blood pressure', 'Manage diabetes', 'Limit alcohol', 'Regular exercise'],
+        management: ['Medication adherence', 'Regular monitoring', 'Lifestyle modifications', 'Emergency plan']
+      },
+      'stroke': {
+        title: 'Stroke',
+        severity: 'critical',
+        prevalence: '1 in 100 adults',
+        description: 'A medical emergency where blood flow to the brain is interrupted, causing brain cell damage.',
+        symptoms: ['Sudden numbness', 'Confusion', 'Trouble speaking', 'Vision problems', 'Severe headache'],
+        causes: ['Blood clots', 'Bleeding in brain', 'High blood pressure', 'Atherosclerosis', 'Atrial fibrillation'],
+        treatments: ['Emergency treatment', 'Clot-busting drugs', 'Surgery', 'Rehabilitation', 'Medications'],
+        complications: ['Paralysis', 'Speech problems', 'Memory loss', 'Emotional problems', 'Death'],
+        prevention: ['Control blood pressure', 'Manage diabetes', 'No smoking', 'Healthy diet', 'Regular exercise'],
+        management: ['Rehabilitation', 'Medication adherence', 'Lifestyle modifications', 'Regular monitoring']
+      },
+      'asthma': {
+        title: 'Asthma',
+        severity: 'moderate',
+        prevalence: '1 in 12 adults',
+        description: 'A chronic respiratory condition characterized by inflammation and narrowing of the airways.',
+        symptoms: ['Wheezing', 'Shortness of breath', 'Chest tightness', 'Coughing', 'Difficulty breathing'],
+        causes: ['Allergies', 'Environmental factors', 'Genetics', 'Respiratory infections', 'Exercise'],
+        treatments: ['Inhalers', 'Bronchodilators', 'Anti-inflammatory medications', 'Allergy management', 'Lifestyle modifications'],
+        complications: ['Severe asthma attacks', 'Respiratory failure', 'Sleep problems', 'Reduced activity levels'],
+        prevention: ['Avoid triggers', 'Allergy management', 'Regular medication', 'Vaccinations', 'Healthy lifestyle'],
+        management: ['Action plan', 'Regular monitoring', 'Medication adherence', 'Trigger avoidance', 'Emergency preparedness']
+      },
+      'copd': {
+        title: 'COPD (Chronic Obstructive Pulmonary Disease)',
+        severity: 'severe',
+        prevalence: '1 in 15 adults',
+        description: 'A group of lung diseases that block airflow and make breathing difficult.',
+        symptoms: ['Shortness of breath', 'Chronic cough', 'Wheezing', 'Chest tightness', 'Frequent respiratory infections'],
+        causes: ['Smoking', 'Air pollution', 'Occupational exposure', 'Genetics', 'Respiratory infections'],
+        treatments: ['Bronchodilators', 'Inhaled steroids', 'Oxygen therapy', 'Pulmonary rehabilitation', 'Surgery'],
+        complications: ['Respiratory infections', 'Heart problems', 'Lung cancer', 'Depression', 'Respiratory failure'],
+        prevention: ['No smoking', 'Avoid air pollution', 'Vaccinations', 'Early treatment', 'Healthy lifestyle'],
+        management: ['Medication adherence', 'Oxygen therapy', 'Pulmonary rehabilitation', 'Lifestyle modifications']
+      },
+      'pneumonia': {
+        title: 'Pneumonia',
+        severity: 'moderate',
+        prevalence: '1 in 100 adults annually',
+        description: 'An infection that inflames air sacs in one or both lungs, which may fill with fluid.',
+        symptoms: ['Cough with phlegm', 'Fever', 'Shortness of breath', 'Chest pain', 'Fatigue'],
+        causes: ['Bacteria', 'Viruses', 'Fungi', 'Aspiration', 'Hospital-acquired infections'],
+        treatments: ['Antibiotics', 'Antiviral medications', 'Rest', 'Fluids', 'Oxygen therapy'],
+        complications: ['Respiratory failure', 'Sepsis', 'Lung abscess', 'Pleural effusion', 'Death'],
+        prevention: ['Vaccinations', 'Good hygiene', 'No smoking', 'Healthy lifestyle', 'Avoid sick people'],
+        management: ['Medication adherence', 'Rest', 'Hydration', 'Monitoring', 'Follow-up care']
+      },
+      'bronchitis': {
+        title: 'Bronchitis',
+        severity: 'mild',
+        prevalence: '1 in 20 adults annually',
+        description: 'Inflammation of the lining of bronchial tubes, which carry air to and from the lungs.',
+        symptoms: ['Persistent cough', 'Mucus production', 'Shortness of breath', 'Chest discomfort', 'Fatigue'],
+        causes: ['Viral infections', 'Bacterial infections', 'Smoking', 'Air pollution', 'Allergies'],
+        treatments: ['Rest', 'Fluids', 'Cough suppressants', 'Bronchodilators', 'Antibiotics (if bacterial)'],
+        complications: ['Pneumonia', 'Chronic bronchitis', 'Respiratory failure', 'Asthma'],
+        prevention: ['No smoking', 'Avoid irritants', 'Vaccinations', 'Good hygiene', 'Healthy lifestyle'],
+        management: ['Symptom relief', 'Rest', 'Hydration', 'Avoid irritants', 'Follow-up care']
+      },
+      'lung-cancer': {
+        title: 'Lung Cancer',
+        severity: 'critical',
+        prevalence: '1 in 200 adults',
+        description: 'A type of cancer that begins in the lungs and can spread to other parts of the body.',
+        symptoms: ['Persistent cough', 'Chest pain', 'Shortness of breath', 'Weight loss', 'Fatigue'],
+        causes: ['Smoking', 'Secondhand smoke', 'Radon exposure', 'Asbestos', 'Air pollution', 'Genetics'],
+        treatments: ['Surgery', 'Chemotherapy', 'Radiation therapy', 'Targeted therapy', 'Immunotherapy'],
+        complications: ['Metastasis', 'Respiratory failure', 'Pain', 'Death'],
+        prevention: ['No smoking', 'Avoid secondhand smoke', 'Test for radon', 'Avoid carcinogens', 'Healthy lifestyle'],
+        management: ['Treatment adherence', 'Palliative care', 'Support groups', 'Regular monitoring']
+      },
+      'ibs': {
+        title: 'Irritable Bowel Syndrome (IBS)',
+        severity: 'mild',
+        prevalence: '1 in 10 adults',
+        description: 'A common disorder affecting the large intestine, causing cramping, abdominal pain, bloating, gas, and diarrhea or constipation.',
+        symptoms: ['Abdominal pain', 'Bloating', 'Gas', 'Diarrhea or constipation', 'Mucus in stool'],
+        causes: ['Muscle contractions', 'Nervous system abnormalities', 'Inflammation', 'Bacterial changes', 'Stress'],
+        treatments: ['Diet changes', 'Stress management', 'Medications', 'Probiotics', 'Therapy'],
+        complications: ['Hemorrhoids', 'Poor quality of life', 'Depression', 'Anxiety'],
+        prevention: ['Stress management', 'Healthy diet', 'Regular exercise', 'Adequate sleep'],
+        management: ['Diet modifications', 'Stress management', 'Medication adherence', 'Regular monitoring']
+      },
+      'crohns': {
+        title: 'Crohn\'s Disease',
+        severity: 'severe',
+        prevalence: '1 in 500 adults',
+        description: 'A chronic inflammatory bowel disease that can affect any part of the digestive tract.',
+        symptoms: ['Abdominal pain', 'Diarrhea', 'Weight loss', 'Fatigue', 'Fever'],
+        causes: ['Immune system problems', 'Genetics', 'Environmental factors', 'Smoking', 'Diet'],
+        treatments: ['Anti-inflammatory drugs', 'Immune system suppressors', 'Antibiotics', 'Surgery', 'Nutrition therapy'],
+        complications: ['Bowel obstruction', 'Fistulas', 'Abscesses', 'Malnutrition', 'Colon cancer'],
+        prevention: ['No smoking', 'Healthy diet', 'Stress management', 'Regular monitoring'],
+        management: ['Medication adherence', 'Diet modifications', 'Regular monitoring', 'Lifestyle modifications']
+      },
+      'ulcerative-colitis': {
+        title: 'Ulcerative Colitis',
+        severity: 'severe',
+        prevalence: '1 in 1000 adults',
+        description: 'A chronic inflammatory bowel disease that causes inflammation and ulcers in the digestive tract.',
+        symptoms: ['Diarrhea with blood', 'Abdominal pain', 'Rectal bleeding', 'Weight loss', 'Fatigue'],
+        causes: ['Immune system problems', 'Genetics', 'Environmental factors', 'Stress', 'Diet'],
+        treatments: ['Anti-inflammatory drugs', 'Immune system suppressors', 'Surgery', 'Nutrition therapy'],
+        complications: ['Severe bleeding', 'Perforated colon', 'Toxic megacolon', 'Colon cancer'],
+        prevention: ['Stress management', 'Healthy diet', 'Regular monitoring', 'No smoking'],
+        management: ['Medication adherence', 'Diet modifications', 'Regular monitoring', 'Lifestyle modifications']
+      },
+      'gastritis': {
+        title: 'Gastritis',
+        severity: 'mild',
+        prevalence: '1 in 20 adults',
+        description: 'Inflammation of the stomach lining that can cause pain, nausea, and other digestive symptoms.',
+        symptoms: ['Stomach pain', 'Nausea', 'Vomiting', 'Bloating', 'Loss of appetite'],
+        causes: ['H. pylori infection', 'NSAIDs', 'Alcohol', 'Stress', 'Autoimmune disorders'],
+        treatments: ['Antacids', 'H2 blockers', 'Proton pump inhibitors', 'Antibiotics', 'Diet changes'],
+        complications: ['Stomach ulcers', 'Bleeding', 'Stomach cancer', 'Anemia'],
+        prevention: ['Avoid NSAIDs', 'Limit alcohol', 'Manage stress', 'Treat infections'],
+        management: ['Medication adherence', 'Diet modifications', 'Stress management', 'Regular monitoring']
+      },
+      'gallstones': {
+        title: 'Gallstones',
+        severity: 'moderate',
+        prevalence: '1 in 10 adults',
+        description: 'Hardened deposits of digestive fluid that can form in the gallbladder.',
+        symptoms: ['Sudden pain in upper right abdomen', 'Back pain', 'Nausea', 'Vomiting', 'Fever'],
+        causes: ['High cholesterol', 'High bilirubin', 'Concentrated bile', 'Obesity', 'Rapid weight loss'],
+        treatments: ['Pain management', 'Surgery', 'Medications', 'Shock wave therapy', 'Endoscopic procedures'],
+        complications: ['Cholecystitis', 'Pancreatitis', 'Cholangitis', 'Gallbladder cancer'],
+        prevention: ['Maintain healthy weight', 'Healthy diet', 'Regular exercise', 'Gradual weight loss'],
+        management: ['Pain management', 'Diet modifications', 'Regular monitoring', 'Surgical consultation']
+      },
+      'migraine': {
+        title: 'Migraine',
+        severity: 'moderate',
+        prevalence: '1 in 7 adults',
+        description: 'A neurological condition characterized by intense, throbbing headaches often accompanied by other symptoms.',
+        symptoms: ['Severe headache', 'Nausea', 'Vomiting', 'Sensitivity to light', 'Sensitivity to sound'],
+        causes: ['Genetics', 'Hormonal changes', 'Stress', 'Sleep changes', 'Weather changes'],
+        treatments: ['Pain relievers', 'Triptans', 'Preventive medications', 'Lifestyle changes', 'Alternative therapies'],
+        complications: ['Chronic migraine', 'Status migrainosus', 'Migrainous infarction', 'Medication overuse'],
+        prevention: ['Identify triggers', 'Regular sleep', 'Stress management', 'Regular exercise'],
+        management: ['Trigger avoidance', 'Medication adherence', 'Lifestyle modifications', 'Regular monitoring']
+      },
+      'epilepsy': {
+        title: 'Epilepsy',
+        severity: 'severe',
+        prevalence: '1 in 100 adults',
+        description: 'A neurological disorder characterized by recurrent seizures due to abnormal electrical activity in the brain.',
+        symptoms: ['Seizures', 'Loss of consciousness', 'Uncontrollable movements', 'Confusion', 'Staring spells'],
+        causes: ['Brain injury', 'Stroke', 'Brain tumor', 'Infections', 'Genetics', 'Developmental disorders'],
+        treatments: ['Antiepileptic drugs', 'Surgery', 'Vagus nerve stimulation', 'Ketogenic diet', 'Lifestyle modifications'],
+        complications: ['Status epilepticus', 'Sudden unexpected death', 'Injury during seizures', 'Depression'],
+        prevention: ['Prevent head injuries', 'Manage underlying conditions', 'Regular medication', 'Healthy lifestyle'],
+        management: ['Medication adherence', 'Seizure diary', 'Regular monitoring', 'Safety precautions']
+      },
+      'parkinsons': {
+        title: 'Parkinson\'s Disease',
+        severity: 'severe',
+        prevalence: '1 in 500 adults',
+        description: 'A progressive nervous system disorder that affects movement, often including tremors.',
+        symptoms: ['Tremors', 'Slowed movement', 'Rigid muscles', 'Impaired posture', 'Speech changes'],
+        causes: ['Loss of nerve cells', 'Low dopamine levels', 'Genetics', 'Environmental factors', 'Age'],
+        treatments: ['Levodopa', 'Dopamine agonists', 'MAO B inhibitors', 'Deep brain stimulation', 'Physical therapy'],
+        complications: ['Thinking difficulties', 'Depression', 'Swallowing problems', 'Sleep disorders', 'Bladder problems'],
+        prevention: ['Regular exercise', 'Healthy diet', 'Avoid toxins', 'Regular check-ups'],
+        management: ['Medication adherence', 'Physical therapy', 'Regular monitoring', 'Lifestyle modifications']
+      },
+      'alzheimers': {
+        title: 'Alzheimer\'s Disease',
+        severity: 'critical',
+        prevalence: '1 in 10 adults over 65',
+        description: 'A progressive disease that destroys memory and other important mental functions.',
+        symptoms: ['Memory loss', 'Confusion', 'Difficulty with familiar tasks', 'Personality changes', 'Disorientation'],
+        causes: ['Plaques and tangles', 'Genetics', 'Age', 'Head trauma', 'Lifestyle factors'],
+        treatments: ['Cholinesterase inhibitors', 'Memantine', 'Supportive care', 'Therapy', 'Lifestyle modifications'],
+        complications: ['Severe memory loss', 'Inability to communicate', 'Incontinence', 'Pneumonia', 'Death'],
+        prevention: ['Regular exercise', 'Healthy diet', 'Mental stimulation', 'Social engagement', 'Manage risk factors'],
+        management: ['Supportive care', 'Safety measures', 'Regular monitoring', 'Family support']
+      },
+      'multiple-sclerosis': {
+        title: 'Multiple Sclerosis',
+        severity: 'severe',
+        prevalence: '1 in 1000 adults',
+        description: 'A disease in which the immune system attacks the protective covering of nerve fibers.',
+        symptoms: ['Numbness', 'Weakness', 'Vision problems', 'Balance problems', 'Fatigue'],
+        causes: ['Autoimmune response', 'Genetics', 'Environmental factors', 'Infections', 'Vitamin D deficiency'],
+        treatments: ['Disease-modifying therapies', 'Corticosteroids', 'Physical therapy', 'Symptom management'],
+        complications: ['Paralysis', 'Vision loss', 'Cognitive problems', 'Bladder problems', 'Depression'],
+        prevention: ['Vitamin D supplementation', 'Healthy lifestyle', 'Stress management', 'Regular monitoring'],
+        management: ['Medication adherence', 'Physical therapy', 'Regular monitoring', 'Lifestyle modifications']
+      },
+      'arthritis': {
+        title: 'Arthritis',
+        severity: 'moderate',
+        prevalence: '1 in 4 adults',
+        description: 'Inflammation of one or more joints, causing pain and stiffness.',
+        symptoms: ['Joint pain', 'Stiffness', 'Swelling', 'Reduced range of motion', 'Joint deformity'],
+        causes: ['Age', 'Genetics', 'Previous joint injury', 'Obesity', 'Autoimmune disorders'],
+        treatments: ['Pain medications', 'Anti-inflammatory drugs', 'Physical therapy', 'Joint injections', 'Surgery'],
+        complications: ['Joint damage', 'Chronic pain', 'Reduced mobility', 'Disability'],
+        prevention: ['Maintain healthy weight', 'Regular exercise', 'Joint protection', 'Early treatment'],
+        management: ['Pain management', 'Physical therapy', 'Joint protection', 'Lifestyle modifications', 'Regular monitoring']
+      },
+      'osteoporosis': {
+        title: 'Osteoporosis',
+        severity: 'moderate',
+        prevalence: '1 in 3 women over 50',
+        description: 'A condition that weakens bones, making them fragile and more likely to break.',
+        symptoms: ['Back pain', 'Loss of height', 'Stooped posture', 'Bone fractures', 'Decreased mobility'],
+        causes: ['Age', 'Hormonal changes', 'Low calcium intake', 'Sedentary lifestyle', 'Smoking', 'Alcohol'],
+        treatments: ['Calcium supplements', 'Vitamin D', 'Bisphosphonates', 'Exercise', 'Hormone therapy'],
+        complications: ['Bone fractures', 'Chronic pain', 'Loss of independence', 'Depression'],
+        prevention: ['Adequate calcium', 'Vitamin D', 'Regular exercise', 'No smoking', 'Limit alcohol'],
+        management: ['Medication adherence', 'Fall prevention', 'Regular monitoring', 'Lifestyle modifications']
+      },
+      'fibromyalgia': {
+        title: 'Fibromyalgia',
+        severity: 'moderate',
+        prevalence: '1 in 50 adults',
+        description: 'A disorder characterized by widespread musculoskeletal pain accompanied by fatigue, sleep, memory and mood issues.',
+        symptoms: ['Widespread pain', 'Fatigue', 'Sleep problems', 'Memory problems', 'Mood changes'],
+        causes: ['Genetics', 'Infections', 'Physical trauma', 'Psychological stress', 'Hormonal changes'],
+        treatments: ['Pain relievers', 'Antidepressants', 'Anti-seizure drugs', 'Physical therapy', 'Counseling'],
+        complications: ['Chronic pain', 'Depression', 'Anxiety', 'Sleep disorders', 'Reduced quality of life'],
+        prevention: ['Stress management', 'Regular exercise', 'Healthy sleep', 'Support system'],
+        management: ['Pain management', 'Exercise program', 'Stress management', 'Regular monitoring']
+      },
+      'herniated-disc': {
+        title: 'Herniated Disc',
+        severity: 'moderate',
+        prevalence: '1 in 20 adults',
+        description: 'A condition where a disc between vertebrae bulges or ruptures, pressing on nearby nerves.',
+        symptoms: ['Back pain', 'Leg pain', 'Numbness', 'Weakness', 'Tingling'],
+        causes: ['Age-related wear', 'Lifting heavy objects', 'Sudden movements', 'Obesity', 'Sedentary lifestyle'],
+        treatments: ['Rest', 'Pain medications', 'Physical therapy', 'Epidural injections', 'Surgery'],
+        complications: ['Chronic pain', 'Nerve damage', 'Loss of bladder control', 'Permanent weakness'],
+        prevention: ['Proper lifting techniques', 'Regular exercise', 'Maintain healthy weight', 'Good posture'],
+        management: ['Pain management', 'Physical therapy', 'Activity modification', 'Regular monitoring']
+      },
+      'bursitis': {
+        title: 'Bursitis',
+        severity: 'mild',
+        prevalence: '1 in 100 adults',
+        description: 'Inflammation of the fluid-filled sacs that cushion bones, tendons and muscles near joints.',
+        symptoms: ['Joint pain', 'Swelling', 'Stiffness', 'Redness', 'Warmth'],
+        causes: ['Repetitive motions', 'Joint overuse', 'Injury', 'Infection', 'Rheumatoid arthritis'],
+        treatments: ['Rest', 'Ice', 'Pain medications', 'Physical therapy', 'Cortisone injections'],
+        complications: ['Chronic pain', 'Limited mobility', 'Infection', 'Recurrence'],
+        prevention: ['Avoid repetitive motions', 'Use proper techniques', 'Take breaks', 'Strengthen muscles'],
+        management: ['Activity modification', 'Pain management', 'Physical therapy', 'Regular monitoring']
+      },
+      'diabetes': {
+        title: 'Diabetes',
+        severity: 'severe',
+        prevalence: '1 in 10 adults',
+        description: 'A group of metabolic disorders characterized by high blood sugar levels over a prolonged period.',
+        symptoms: ['Increased thirst', 'Frequent urination', 'Extreme fatigue', 'Blurred vision', 'Slow healing'],
+        causes: ['Insulin resistance', 'Pancreatic dysfunction', 'Genetics', 'Obesity', 'Sedentary lifestyle'],
+        treatments: ['Insulin therapy', 'Oral medications', 'Diet management', 'Exercise', 'Blood sugar monitoring'],
+        complications: ['Cardiovascular disease', 'Kidney damage', 'Nerve damage', 'Eye problems', 'Foot problems'],
+        prevention: ['Healthy weight', 'Regular exercise', 'Balanced diet', 'Regular check-ups', 'Avoid smoking'],
+        management: ['Blood glucose monitoring', 'Medication adherence', 'Diet planning', 'Exercise routine', 'Regular HbA1c tests']
+      },
+      'thyroid-disorders': {
+        title: 'Thyroid Disorders',
+        severity: 'moderate',
+        prevalence: '1 in 20 adults',
+        description: 'Conditions affecting the thyroid gland, which regulates metabolism and energy levels.',
+        symptoms: ['Fatigue', 'Weight changes', 'Mood changes', 'Hair loss', 'Temperature sensitivity'],
+        causes: ['Autoimmune disorders', 'Iodine deficiency', 'Genetics', 'Radiation exposure', 'Medications'],
+        treatments: ['Thyroid hormone replacement', 'Anti-thyroid medications', 'Radioactive iodine', 'Surgery'],
+        complications: ['Heart problems', 'Mental health issues', 'Pregnancy complications', 'Thyroid storm'],
+        prevention: ['Adequate iodine', 'Regular check-ups', 'Manage stress', 'Healthy lifestyle'],
+        management: ['Medication adherence', 'Regular monitoring', 'Lifestyle modifications', 'Regular check-ups']
+      },
+      'adrenal-disorders': {
+        title: 'Adrenal Disorders',
+        severity: 'moderate',
+        prevalence: '1 in 1000 adults',
+        description: 'Conditions affecting the adrenal glands, which produce hormones that regulate metabolism and stress response.',
+        symptoms: ['Fatigue', 'Weight changes', 'Blood pressure changes', 'Mood changes', 'Skin changes'],
+        causes: ['Tumors', 'Autoimmune disorders', 'Infections', 'Genetics', 'Medications'],
+        treatments: ['Hormone replacement', 'Surgery', 'Medications', 'Lifestyle modifications'],
+        complications: ['Adrenal crisis', 'Cardiovascular problems', 'Metabolic disorders', 'Mental health issues'],
+        prevention: ['Regular check-ups', 'Manage stress', 'Healthy lifestyle', 'Early treatment'],
+        management: ['Medication adherence', 'Stress management', 'Regular monitoring', 'Emergency plan']
+      },
+      'pcos': {
+        title: 'PCOS (Polycystic Ovary Syndrome)',
+        severity: 'moderate',
+        prevalence: '1 in 10 women',
+        description: 'A hormonal disorder common among women of reproductive age, affecting the ovaries.',
+        symptoms: ['Irregular periods', 'Excess hair growth', 'Acne', 'Weight gain', 'Hair loss'],
+        causes: ['Hormonal imbalance', 'Insulin resistance', 'Genetics', 'Inflammation', 'Lifestyle factors'],
+        treatments: ['Birth control pills', 'Metformin', 'Lifestyle changes', 'Fertility treatments'],
+        complications: ['Infertility', 'Type 2 diabetes', 'Sleep apnea', 'Depression', 'Endometrial cancer'],
+        prevention: ['Maintain healthy weight', 'Regular exercise', 'Healthy diet', 'Regular check-ups'],
+        management: ['Lifestyle modifications', 'Medication adherence', 'Regular monitoring', 'Fertility planning']
+      },
+      'metabolic-syndrome': {
+        title: 'Metabolic Syndrome',
+        severity: 'moderate',
+        prevalence: '1 in 3 adults',
+        description: 'A cluster of conditions that occur together, increasing the risk of heart disease, stroke, and diabetes.',
+        symptoms: ['High blood pressure', 'High blood sugar', 'Excess body fat', 'Abnormal cholesterol levels'],
+        causes: ['Obesity', 'Insulin resistance', 'Sedentary lifestyle', 'Genetics', 'Age'],
+        treatments: ['Lifestyle changes', 'Medications', 'Weight management', 'Exercise', 'Diet modifications'],
+        complications: ['Type 2 diabetes', 'Cardiovascular disease', 'Stroke', 'Kidney disease'],
+        prevention: ['Maintain healthy weight', 'Regular exercise', 'Healthy diet', 'Regular check-ups'],
+        management: ['Lifestyle modifications', 'Medication adherence', 'Regular monitoring', 'Weight management']
+      }
+    };
+
+    function searchConditions() {
+      const searchTerm = document.getElementById('conditionSearch').value.toLowerCase();
+      const resultsDiv = document.getElementById('searchResults');
+      
+      if (searchTerm.length < 2) {
+        resultsDiv.style.display = 'none';
+        return;
+      }
+
+      const matchingConditions = Object.keys(conditionDatabase).filter(key => 
+        conditionDatabase[key].title.toLowerCase().includes(searchTerm)
+      );
+
+      if (matchingConditions.length > 0) {
+        resultsDiv.innerHTML = matchingConditions.map(key => 
+          `<div class="search-result-item" onclick="showConditionDetail('${key}')">
+            ${conditionDatabase[key].title}
+          </div>`
+        ).join('');
+        resultsDiv.style.display = 'block';
+      } else {
+        resultsDiv.innerHTML = '<div style="padding: 1rem; color: var(--gray-600);">No conditions found matching your search.</div>';
+        resultsDiv.style.display = 'block';
+      }
+    }
+
+    function showConditionDetail(conditionKey) {
+      const condition = conditionDatabase[conditionKey];
+      if (!condition) {
+        alert('Condition information not available yet. This feature is being developed.');
+        return;
+      }
+
+      const modal = document.getElementById('conditionDetailModal');
+      const title = document.getElementById('conditionTitle');
+      const content = document.getElementById('conditionContent');
+
+      title.textContent = condition.title;
+      
+      const severityClass = `severity-${condition.severity}`;
+      const severityText = condition.severity.charAt(0).toUpperCase() + condition.severity.slice(1);
+
+      content.innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+          <span class="condition-severity ${severityClass}">${severityText} Condition</span>
+        </div>
+        
+        <div class="condition-stats">
+          <div class="stat-card">
+            <div class="stat-number">${condition.prevalence}</div>
+            <div class="stat-label">Prevalence</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${condition.severity.charAt(0).toUpperCase()}</div>
+            <div class="stat-label">Severity</div>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>Description</h4>
+          <p>${condition.description}</p>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>Common Symptoms</h4>
+          <ul>
+            ${condition.symptoms.map(symptom => `<li>${symptom}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>Possible Causes</h4>
+          <ul>
+            ${condition.causes.map(cause => `<li>${cause}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>Treatment Options</h4>
+          <ul>
+            ${condition.treatments.map(treatment => `<li>${treatment}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>Potential Complications</h4>
+          <ul>
+            ${condition.complications.map(complication => `<li>${complication}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>Prevention Strategies</h4>
+          <ul>
+            ${condition.prevention.map(prevention => `<li>${prevention}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+          <h4>Management Tips</h4>
+          <ul>
+            ${condition.management.map(management => `<li>${management}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <div style="background: #fef3c7; padding: 1rem; border-radius: 6px; border-left: 4px solid #f59e0b;">
+          <strong>⚠️ Important:</strong> This information is for educational purposes only and should not replace professional medical advice. Always consult a healthcare provider for proper diagnosis and treatment.
+        </div>
+      `;
+
+      modal.style.display = 'block';
+    }
+
+    function closeConditionModal() {
+      document.getElementById('conditionDetailModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('conditionDetailModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
