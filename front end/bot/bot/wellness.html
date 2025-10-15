@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health And Wellness - MedBuddy</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="stylesheet" href="hackathontask.css" />
+  <style>
+    .wellness-container {
+      max-width: 1400px;
+      min-height: 100vh;
+    }
+    
+    .hero-section {
+      background: var(--gradient-hero);
+      border-radius: 24px;
+      padding: 4rem 3rem;
+      margin-bottom: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 40%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      transform: rotate(15deg);
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 1.5rem;
+      line-height: 1.1;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    
+    .wellness-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+    
+    .wellness-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      border: 1px solid rgba(236, 72, 153, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .wellness-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-primary);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .wellness-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(236, 72, 153, 0.15);
+    }
+    
+    .wellness-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .card-icon {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+    
+    .wellness-card h3 {
+      color: var(--gray-800);
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+    
+    .wellness-card p {
+      color: var(--gray-600);
+      margin-bottom: 2rem;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+    
+    .wellness-btn {
+      background: var(--gradient-primary);
+      color: var(--white);
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      font-size: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .wellness-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .wellness-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(236, 72, 153, 0.3);
+    }
+    
+    .wellness-btn:hover::before {
+      left: 100%;
+    }
+    
+    .wellness-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      border: 1px solid rgba(236, 72, 153, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="lower-out">
+      <div class="lower-nav">
+        <div class="site-name">
+          <h1><a href="index.html" style="text-decoration: none; color: inherit;">MedBuddy</a></h1>
+        </div>
+        <div class="nav-links">
+          <ul>
+            <li><a href="diagnostic-tools.html">Diagnostic Tools</a></li>
+            <li><a href="symptoms.html">Symptoms</a></li>
+            <li><a href="conditions.html">Conditions</a></li>
+            <li><a href="wellness.html" style="color: var(--primary-blue); font-weight: 600;">Health And Wellness</a></li>
+          </ul>
+        </div>
+        <div class="nav-button">
+          <button><b>Online<br>Consultation</b></button>
+          <button><b>Medical Facilities<br>Near Me</b></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wellness-container">
+    <div class="hero-section">
+      <div class="hero-content">
+        <span class="tilted" style="color: rgba(255,255,255,0.9); font-size: 1rem; letter-spacing: 2px;">Health & Wellness</span>
+        <h1 class="hero-title">Your Personal<br>Wellness Hub</h1>
+        <p class="hero-subtitle">Track your health metrics, discover wellness tips, and build healthy habits for a better life.</p>
+      </div>
+    </div>
+
+    <div class="wellness-grid">
+      <div class="wellness-card">
+        <span class="card-icon">🍎</span>
+        <h3>Nutrition & Diet</h3>
+        <p>Get personalized nutrition advice, meal plans, and track your dietary habits for optimal health.</p>
+        <button class="wellness-btn" onclick="openWellnessModal('nutrition')">Explore Nutrition</button>
+      </div>
+
+      <div class="wellness-card">
+        <span class="card-icon">🏃</span>
+        <h3>Exercise & Fitness</h3>
+        <p>Create custom workout plans, track your fitness progress, and discover exercises tailored to your goals.</p>
+        <button class="wellness-btn" onclick="openWellnessModal('fitness')">Start Fitness Plan</button>
+      </div>
+
+      <div class="wellness-card">
+        <span class="card-icon">😌</span>
+        <h3>Mental Health</h3>
+        <p>Access mindfulness exercises, stress management techniques, and mental wellness resources.</p>
+        <button class="wellness-btn" onclick="openWellnessModal('mental-health')">Focus on Mental Health</button>
+      </div>
+
+      <div class="wellness-card">
+        <span class="card-icon">😴</span>
+        <h3>Sleep Wellness</h3>
+        <p>Improve your sleep quality with personalized sleep tips, tracking tools, and relaxation techniques.</p>
+        <button class="wellness-btn" onclick="openWellnessModal('sleep')">Optimize Sleep</button>
+      </div>
+
+      <div class="wellness-card">
+        <span class="card-icon">🧘</span>
+        <h3>Stress Management</h3>
+        <p>Learn effective stress reduction techniques, breathing exercises, and mindfulness practices.</p>
+        <button class="wellness-btn" onclick="openWellnessModal('stress')">Manage Stress</button>
+      </div>
+
+      <div class="wellness-card">
+        <span class="card-icon">💊</span>
+        <h3>Medication Tracker</h3>
+        <p>Keep track of your medications, set reminders, and monitor potential drug interactions.</p>
+        <button class="wellness-btn" onclick="openWellnessModal('medications')">Track Medications</button>
+      </div>
+
+      <div class="wellness-card">
+        <span class="card-icon">📅</span>
+        <h3>Health Calendar</h3>
+        <p>Schedule appointments, set health goals, and track important health milestones.</p>
+        <button class="wellness-btn" onclick="openWellnessModal('calendar')">View Calendar</button>
+      </div>
+
+      <div class="wellness-card">
+        <span class="card-icon">🎯</span>
+        <h3>Goal Setting</h3>
+        <p>Set and track your health goals with personalized action plans and progress monitoring.</p>
+        <button class="wellness-btn" onclick="openWellnessModal('goals')">Set Goals</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wellness Modal -->
+  <div id="wellnessModal" class="wellness-modal">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 id="wellnessTitle" style="color: var(--primary-blue); margin: 0;"></h2>
+        <button onclick="closeWellnessModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+      </div>
+      
+      <div id="wellnessContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const wellnessContent = {
+      'nutrition': {
+        title: 'Nutrition & Diet',
+        content: `
+          <h4>Daily Nutrition Goals</h4>
+          <div class="tip-card">
+            <strong>Hydration:</strong> Aim for 8 glasses of water daily. Add lemon or cucumber for flavor.
+          </div>
+          <div class="tip-card">
+            <strong>Fruits & Vegetables:</strong> Include 5-7 servings of colorful fruits and vegetables daily.
+          </div>
+          <div class="tip-card">
+            <strong>Protein:</strong> Include lean protein sources like fish, chicken, beans, and nuts.
+          </div>
+          <div class="tip-card">
+            <strong>Whole Grains:</strong> Choose whole grain bread, rice, and pasta over refined versions.
+          </div>
+          
+          <h4>Meal Planning Tips</h4>
+          <ul>
+            <li>Plan meals for the week ahead</li>
+            <li>Prep ingredients in advance</li>
+            <li>Include a variety of colors on your plate</li>
+            <li>Control portion sizes</li>
+            <li>Limit processed foods</li>
+          </ul>
+          
+          <button class="wellness-btn" onclick="alert('Meal planning feature coming soon!')">Start Meal Planning</button>
+        `
+      },
+      'fitness': {
+        title: 'Exercise & Fitness',
+        content: `
+          <h4>Recommended Weekly Activity</h4>
+          <div class="tip-card">
+            <strong>Cardio:</strong> 150 minutes of moderate-intensity aerobic activity per week
+          </div>
+          <div class="tip-card">
+            <strong>Strength Training:</strong> 2-3 sessions per week targeting major muscle groups
+          </div>
+          <div class="tip-card">
+            <strong>Flexibility:</strong> Daily stretching or yoga sessions
+          </div>
+          
+          <h4>Exercise Ideas</h4>
+          <ul>
+            <li>Walking or jogging</li>
+            <li>Swimming</li>
+            <li>Cycling</li>
+            <li>Dancing</li>
+            <li>Strength training with weights or bodyweight</li>
+            <li>Yoga or Pilates</li>
+          </ul>
+          
+          <h4>Getting Started</h4>
+          <ul>
+            <li>Start with 10-15 minutes daily</li>
+            <li>Choose activities you enjoy</li>
+            <li>Gradually increase intensity and duration</li>
+            <li>Listen to your body</li>
+            <li>Stay consistent</li>
+          </ul>
+          
+          <button class="wellness-btn" onclick="alert('Workout planner feature coming soon!')">Create Workout Plan</button>
+        `
+      },
+      'mental-health': {
+        title: 'Mental Health & Wellness',
+        content: `
+          <h4>Daily Mental Health Practices</h4>
+          <div class="tip-card">
+            <strong>Mindfulness:</strong> Practice 10-15 minutes of meditation or deep breathing daily
+          </div>
+          <div class="tip-card">
+            <strong>Gratitude:</strong> Write down 3 things you're grateful for each day
+          </div>
+          <div class="tip-card">
+            <strong>Social Connection:</strong> Spend quality time with friends and family
+          </div>
+          
+          <h4>Stress Management Techniques</h4>
+          <ul>
+            <li>Deep breathing exercises</li>
+            <li>Progressive muscle relaxation</li>
+            <li>Mindfulness meditation</li>
+            <li>Regular exercise</li>
+            <li>Adequate sleep</li>
+            <li>Time management</li>
+          </ul>
+          
+          <h4>When to Seek Help</h4>
+          <ul>
+            <li>Persistent feelings of sadness or anxiety</li>
+            <li>Difficulty concentrating or making decisions</li>
+            <li>Changes in sleep or appetite</li>
+            <li>Loss of interest in activities</li>
+            <li>Thoughts of self-harm</li>
+          </ul>
+          
+          <button class="wellness-btn" onclick="alert('Mental health resources and guided meditations coming soon!')">Access Resources</button>
+        `
+      },
+      'sleep': {
+        title: 'Sleep Wellness',
+        content: `
+          <h4>Sleep Hygiene Tips</h4>
+          <div class="tip-card">
+            <strong>Consistent Schedule:</strong> Go to bed and wake up at the same time every day
+          </div>
+          <div class="tip-card">
+            <strong>Bedroom Environment:</strong> Keep your room cool, dark, and quiet
+          </div>
+          <div class="tip-card">
+            <strong>Screen Time:</strong> Avoid screens 1 hour before bedtime
+          </div>
+          
+          <h4>Pre-Sleep Routine</h4>
+          <ul>
+            <li>Dim the lights 1 hour before bed</li>
+            <li>Read a book or listen to calming music</li>
+            <li>Practice relaxation techniques</li>
+            <li>Avoid caffeine and heavy meals</li>
+            <li>Create a comfortable sleep environment</li>
+          </ul>
+          
+          <h4>Sleep Duration Recommendations</h4>
+          <ul>
+            <li>Adults (18-64): 7-9 hours</li>
+            <li>Older adults (65+): 7-8 hours</li>
+            <li>Teenagers: 8-10 hours</li>
+            <li>Children (6-13): 9-11 hours</li>
+          </ul>
+          
+          <button class="wellness-btn" onclick="alert('Sleep tracking and personalized sleep plans coming soon!')">Track Sleep</button>
+        `
+      },
+      'stress': {
+        title: 'Stress Management',
+        content: `
+          <h4>Quick Stress Relief Techniques</h4>
+          <div class="tip-card">
+            <strong>4-7-8 Breathing:</strong> Inhale for 4, hold for 7, exhale for 8 seconds
+          </div>
+          <div class="tip-card">
+            <strong>Progressive Relaxation:</strong> Tense and release each muscle group
+          </div>
+          <div class="tip-card">
+            <strong>Mindful Walking:</strong> Focus on each step and your surroundings
+          </div>
+          
+          <h4>Long-term Stress Management</h4>
+          <ul>
+            <li>Regular exercise</li>
+            <li>Healthy diet</li>
+            <li>Adequate sleep</li>
+            <li>Time management</li>
+            <li>Social support</li>
+            <li>Hobbies and interests</li>
+          </ul>
+          
+          <h4>Stress Warning Signs</h4>
+          <ul>
+            <li>Headaches or muscle tension</li>
+            <li>Changes in appetite</li>
+            <li>Difficulty sleeping</li>
+            <li>Irritability or mood swings</li>
+            <li>Difficulty concentrating</li>
+          </ul>
+          
+          <button class="wellness-btn" onclick="alert('Guided stress relief exercises and personalized stress management plans coming soon!')">Start Stress Relief</button>
+        `
+      },
+      'medications': {
+        title: 'Medication Tracker',
+        content: `
+          <h4>Medication Management Tips</h4>
+          <div class="tip-card">
+            <strong>Set Reminders:</strong> Use phone alarms or medication apps
+          </div>
+          <div class="tip-card">
+            <strong>Keep a List:</strong> Maintain an updated list of all medications
+          </div>
+          <div class="tip-card">
+            <strong>Check Interactions:</strong> Always inform your doctor about all medications
+          </div>
+          
+          <h4>Important Information to Track</h4>
+          <ul>
+            <li>Medication name and dosage</li>
+            <li>Time and frequency</li>
+            <li>Side effects experienced</li>
+            <li>Effectiveness</li>
+            <li>Refill dates</li>
+          </ul>
+          
+          <h4>Safety Tips</h4>
+          <ul>
+            <li>Never share medications</li>
+            <li>Store medications properly</li>
+            <li>Check expiration dates</li>
+            <li>Follow dosage instructions exactly</li>
+            <li>Keep medications out of reach of children</li>
+          </ul>
+          
+          <button class="wellness-btn" onclick="alert('Digital medication tracker with reminders and interaction checker coming soon!')">Track Medications</button>
+        `
+      },
+      'calendar': {
+        title: 'Health Calendar',
+        content: `
+          <h4>Important Health Dates to Track</h4>
+          <div class="tip-card">
+            <strong>Appointments:</strong> Doctor visits, check-ups, specialist consultations
+          </div>
+          <div class="tip-card">
+            <strong>Vaccinations:</strong> Annual flu shots, routine immunizations
+          </div>
+          <div class="tip-card">
+            <strong>Screenings:</strong> Mammograms, colonoscopies, blood tests
+          </div>
+          
+          <h4>Monthly Health Tasks</h4>
+          <ul>
+            <li>Check blood pressure</li>
+            <li>Monitor weight</li>
+            <li>Review medication supplies</li>
+            <li>Schedule routine appointments</li>
+            <li>Update health records</li>
+          </ul>
+          
+          <h4>Annual Health Checklist</h4>
+          <ul>
+            <li>Annual physical exam</li>
+            <li>Dental cleaning</li>
+            <li>Eye exam</li>
+            <li>Vaccination updates</li>
+            <li>Health insurance review</li>
+          </ul>
+          
+          <button class="wellness-btn" onclick="alert('Interactive health calendar with appointment scheduling and reminders coming soon!')">View Calendar</button>
+        `
+      },
+      'goals': {
+        title: 'Health Goal Setting',
+        content: `
+          <h4>SMART Goal Framework</h4>
+          <div class="tip-card">
+            <strong>S - Specific:</strong> Clearly define what you want to achieve
+          </div>
+          <div class="tip-card">
+            <strong>M - Measurable:</strong> Include numbers or metrics to track progress
+          </div>
+          <div class="tip-card">
+            <strong>A - Achievable:</strong> Set realistic goals within your capabilities
+          </div>
+          <div class="tip-card">
+            <strong>R - Relevant:</strong> Align goals with your health priorities
+          </div>
+          <div class="tip-card">
+            <strong>T - Time-bound:</strong> Set specific deadlines for achievement
+          </div>
+          
+          <h4>Example Health Goals</h4>
+          <ul>
+            <li>Walk 10,000 steps daily for 30 days</li>
+            <li>Drink 8 glasses of water every day this month</li>
+            <li>Exercise 3 times per week for 3 months</li>
+            <li>Lose 10 pounds in 6 months</li>
+            <li>Meditate 10 minutes daily for 2 weeks</li>
+          </ul>
+          
+          <h4>Goal Tracking Tips</h4>
+          <ul>
+            <li>Break large goals into smaller milestones</li>
+            <li>Celebrate small victories</li>
+            <li>Track progress regularly</li>
+            <li>Adjust goals as needed</li>
+            <li>Share goals with supportive people</li>
+          </ul>
+          
+          <button class="wellness-btn" onclick="alert('Personalized goal setting and tracking system coming soon!')">Set Your Goals</button>
+        `
+      }
+    };
+
+    function openWellnessModal(category) {
+      const content = wellnessContent[category];
+      if (!content) {
+        alert('This wellness feature is coming soon!');
+        return;
+      }
+
+      const modal = document.getElementById('wellnessModal');
+      const title = document.getElementById('wellnessTitle');
+      const contentDiv = document.getElementById('wellnessContent');
+
+      title.textContent = content.title;
+      contentDiv.innerHTML = content.content;
+
+      modal.style.display = 'block';
+    }
+
+    function closeWellnessModal() {
+      document.getElementById('wellnessModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('wellnessModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // Simulate real-time updates for health dashboard
+    function updateHealthDashboard() {
+      // This would normally connect to real health tracking devices
+      // For demo purposes, we'll simulate some changes
+      const waterIntake = document.getElementById('waterIntake');
+      const steps = document.getElementById('steps');
+      
+      // Simulate incremental updates
+      setTimeout(() => {
+        waterIntake.textContent = '7/8';
+        waterIntake.parentElement.querySelector('.progress-fill').style.width = '87.5%';
+      }, 2000);
+      
+      setTimeout(() => {
+        steps.textContent = '8,200';
+        steps.parentElement.querySelector('.progress-fill').style.width = '82%';
+      }, 4000);
+    }
+
+    // Start dashboard updates when page loads
+    updateHealthDashboard();
+  </script>
+</body>
+</html>
